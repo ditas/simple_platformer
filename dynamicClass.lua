@@ -31,7 +31,7 @@ function Dynamic.new(x, y, shape, width, height, baseSpeed, maxSpeed, angle, act
 end
 
 function Dynamic:update(dt, obstacles)
-    print("ACTION " .. self.action)
+    print("BEFORE COLL ACTION " .. self.action)
 
     if self.action == "Right side crossed with obstacle's Bottom" 
         or self.action == "Left side crossed with obstacle's Bottom" 
@@ -49,7 +49,8 @@ function Dynamic:update(dt, obstacles)
         else 
             self.action = "freeFall"
             if self.baseSpeed > self.maxSpeed then
-                self.baseSpeed = self.maxSpeed
+                -- self.baseSpeed = self.maxSpeed
+                self.baseSpeed = 0
             end
         end
     elseif self.action == "Left side crossed with obstacle's Top"
@@ -99,10 +100,25 @@ function Dynamic:throwUpDelta(t)
 end
 
 function Dynamic:throwUp(v)
-    if self.action ~= "Right side crossed with obstacle's Bottom" and self.action ~= "Left side crossed with obstacle's Bottom" then
-        self.baseSpeed = v
-        self.action = "throwUp"
-        self.statusB = 0
+    if self.action ~= "Right side crossed with obstacle's Bottom" 
+        and self.action ~= "Left side crossed with obstacle's Bottom" then
+
+        -- print("---------LEFT COLLISION " .. self.statusL)
+        -- print("---------RIGHT COLLISION " .. self.statusR)
+
+        -- if self.statusL == 1 then
+        --     print("----THROW RIGHT")
+        --     self:throwAngle(v, 45, nil)
+        --     self.statusL = 0
+        -- elseif self.statusR == 1 then
+        --     print("----THROW LEFT")
+        --     self:throwAngle(v, 135, nil)
+        --     self.statusR = 0
+        -- else
+            self.baseSpeed = v
+            self.action = "throwUp"
+            self.statusB = 0
+        -- end
     end
 end
 
@@ -206,19 +222,35 @@ function Dynamic:detectCollision(obstacles)
 
 
 
-        if inter5 then
+        -- if inter5 then
+        --     self.action = "Top side crossed with obstacle's Left"
+        --     self.statusR = 1
+        -- end
+        -- if inter6 then
+        --     self.action = "Bottom side crossed with obstacle's Left"
+        --     self.statusR = 1
+        -- end
+        -- if inter7 then
+        --     self.action = "Top side crossed with obstacle's Right"
+        --     self.statusL = 1
+        -- end
+        -- if inter8 then
+        --     self.action = "Bottom side crossed with obstacle's Right"
+        --     self.statusL = 1
+        -- end
+        if inter5 and self.action ~="throwUp" then
             self.action = "Top side crossed with obstacle's Left"
             self.statusR = 1
         end
-        if inter6 then
+        if inter6 and self.action ~="throwUp" then
             self.action = "Bottom side crossed with obstacle's Left"
             self.statusR = 1
         end
-        if inter7 then
+        if inter7 and self.action ~="throwUp" then
             self.action = "Top side crossed with obstacle's Right"
             self.statusL = 1
         end
-        if inter8 then
+        if inter8 and self.action ~="throwUp" then
             self.action = "Bottom side crossed with obstacle's Right"
             self.statusL = 1
         end
