@@ -21,6 +21,11 @@ function Dynamic.new(x, y, shape, width, height, baseSpeed, maxSpeed, angle, act
     o.fixY = 0
     o.throwAngleTimeMultiplier = 10
 
+    o.statusL = 0
+    o.statusT = 0
+    o.statusR = 0
+    o.statusB = 0
+
     setmetatable(o, Dynamic)
     return o
 end
@@ -38,8 +43,20 @@ function Dynamic:update(dt, obstacles)
         or self.action == "Top side crossed with obstacle's Right"
         or self.action == "Bottom side crossed with obstacle's Right"
     then
-        self.action = "freeFall"
-        self.baseSpeed = self.maxSpeed
+        if self.statusB == 1 then
+            self.action = "Left side crossed with obstacle's Top"
+            self.statusB = 0
+        else 
+            self.action = "freeFall"
+            if self.baseSpeed > self.maxSpeed then
+                self.baseSpeed = self.maxSpeed
+            end
+        end
+    elseif self.action == "Left side crossed with obstacle's Top"
+        or self.action == "Right side crossed with obstacle's Top"
+    then
+        self.action = "stop"
+        self.baseSpeed = 0
     end
 
     self.x = self.x
@@ -85,6 +102,7 @@ function Dynamic:throwUp(v)
     if self.action ~= "Right side crossed with obstacle's Bottom" and self.action ~= "Left side crossed with obstacle's Bottom" then
         self.baseSpeed = v
         self.action = "throwUp"
+        self.statusB = 0
     end
 end
 
@@ -100,29 +118,38 @@ end
 function Dynamic:throwAngle(v, alpha, throwAngleTimeMultiplier)
     if self.action ~= "Right side crossed with obstacle's Bottom" 
         and self.action ~= "Left side crossed with obstacle's Bottom" 
-        and self.action ~= "Top side crossed with obstacle's Left"
-        and self.action ~= "Bottom side crossed with obstacle's Left"
-        and self.action ~= "Top side crossed with obstacle's Right"
-        and self.action ~= "Bottom side crossed with obstacle's Right"
     then
-        self.fixX = self.x
-        self.fixY = self.y
-        -- print("FIX X: " .. self.fixX .. " FIX Y: " .. self.fixY)
-        self.angle = alpha*math.pi/180
-        self.baseSpeed = v
-        self.action = "throwAngle"
-        self.time = 0
-        self.throwAngleTimeMultiplier = throwAngleTimeMultiplier or 10
+        if alpha < 90 
+            and self.action ~= "Top side crossed with obstacle's Left"
+            and self.action ~= "Bottom side crossed with obstacle's Left"
+        then 
+            self.fixX = self.x
+            self.fixY = self.y
+            -- print("FIX X: " .. self.fixX .. " FIX Y: " .. self.fixY)
+            self.angle = alpha*math.pi/180
+            self.baseSpeed = v
+            self.action = "throwAngle"
+            self.time = 0
+            self.throwAngleTimeMultiplier = throwAngleTimeMultiplier or 10
+            self.statusB = 0
+        elseif alpha > 90 
+            and self.action ~= "Top side crossed with obstacle's Right"
+            and self.action ~= "Bottom side crossed with obstacle's Right"
+        then
+            self.fixX = self.x
+            self.fixY = self.y
+            -- print("FIX X: " .. self.fixX .. " FIX Y: " .. self.fixY)
+            self.angle = alpha*math.pi/180
+            self.baseSpeed = v
+            self.action = "throwAngle"
+            self.time = 0
+            self.throwAngleTimeMultiplier = throwAngleTimeMultiplier or 10
+            self.statusB = 0
+        end
     end
 end
 
 function Dynamic:detectCollision(obstacles)
-
-    -- local left = {x1 = self.x, y1 = self.y, x2 = self.x, y2 = self.y + self.height}
-    -- local right = {x1 = self.x + self.width, y1 = self.y, x2 = self.x + self.width, y2 = self.y + self.height}
-
-    -- local top = {x1 = self.x, y1 = self.y, x2 = self.x + self.width, y2 = self.y}
-    -- local bottom = {x1 = self.x, y1 = self.y + self.height, x2 = self.x + self.width, y2 = self.y + self.height}
 
     local left = {x1 = self.x, y1 = self.y - 5, x2 = self.x, y2 = self.y + self.height + 5}
     local right = {x1 = self.x + self.width, y1 = self.y - 5, x2 = self.x + self.width, y2 = self.y + self.height + 5}
@@ -161,31 +188,39 @@ function Dynamic:detectCollision(obstacles)
 
         if inter1 then
             self.action = "Left side crossed with obstacle's Top"
+            self.statusB = 1
         end
         if inter2 then
             self.action = "Right side crossed with obstacle's Top"
+            self.statusB = 1
         end
 
         if inter3 then
             self.action = "Left side crossed with obstacle's Bottom"
+            self.statusT = 1
         end
         if inter4 then
             self.action = "Right side crossed with obstacle's Bottom"
+            self.statusT = 1
         end
 
 
 
         if inter5 then
             self.action = "Top side crossed with obstacle's Left"
+            self.statusR = 1
         end
         if inter6 then
             self.action = "Bottom side crossed with obstacle's Left"
+            self.statusR = 1
         end
         if inter7 then
             self.action = "Top side crossed with obstacle's Right"
+            self.statusL = 1
         end
         if inter8 then
             self.action = "Bottom side crossed with obstacle's Right"
+            self.statusL = 1
         end
 
         -- inter5 = checkIntersection(top, o_left)
