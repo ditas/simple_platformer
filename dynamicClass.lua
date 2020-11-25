@@ -1,4 +1,4 @@
-g = 9.8
+g = 10
 
 Dynamic = {}
 Dynamic.__index = Dynamic
@@ -31,8 +31,9 @@ function Dynamic.new(x, y, shape, width, height, baseSpeed, maxSpeed, angle, act
 end
 
 function Dynamic:update(dt, obstacles)
-    if self.action == "Right side crossed with obstacle's Bottom" 
-        or self.action == "Left side crossed with obstacle's Bottom" 
+    print("----DELTA TIME: " .. dt)
+    if self.action == "Right side crossed with obstacle's Bottom"
+        or self.action == "Left side crossed with obstacle's Bottom"
     then
         self.action = "freeFall"
         self.baseSpeed = 0
@@ -44,7 +45,7 @@ function Dynamic:update(dt, obstacles)
         if self.statusB == 1 then
             self.action = "Left side crossed with obstacle's Top"
             self.statusB = 0
-        else 
+        else
             self.action = "freeFall"
             if self.baseSpeed > self.maxSpeed then
                 self.baseSpeed = 0
@@ -75,24 +76,29 @@ end
 function Dynamic:freeFallDelta(t)
     if self.baseSpeed < self.maxSpeed then
         speed = self.baseSpeed + g*t
+        print("--1--ff DELTA SPEED: " .. speed)
         self.y = self.y + speed
     else
         speed = self.baseSpeed
+        print("--2--ff DELTA SPEED: " .. speed)
         self.y = self.y + speed
     end
     self.baseSpeed = speed
+    self.statusL = 0
+    self.statusR = 0
 end
 
 function Dynamic:throwUpDelta(t)
     if self.baseSpeed > 0 then
         speed = self.baseSpeed - g*t
+        print("----tu DELTA SPEED: " .. speed)
         self.y = self.y - speed
+        self.baseSpeed = speed
     end
-    self.baseSpeed = speed
 end
 
 function Dynamic:throwUp(v)
-    if self.action ~= "Right side crossed with obstacle's Bottom" 
+    if self.action ~= "Right side crossed with obstacle's Bottom"
         and self.action ~= "Left side crossed with obstacle's Bottom" then
             self.baseSpeed = v
             self.action = "throwUp"
@@ -102,18 +108,22 @@ end
 
 function Dynamic:throwAngleDelta(t)
     self.time = self.time + t*self.throwAngleTimeMultiplier
-    self.x = self.fixX + self.baseSpeed*math.cos(self.angle)*self.time
-    self.y = self.fixY - (self.baseSpeed*math.sin(self.angle)*self.time - (g*self.time^2)/2)
+    local speedX = self.baseSpeed*math.cos(self.angle)*self.time
+    local speedY = (self.baseSpeed*math.sin(self.angle)*self.time - (g*self.time^2)/2)
+    print("----ta DELTA SPEED X: " .. speedX)
+    print("----ta DELTA SPEED Y: " .. speedY)
+    self.x = self.fixX + speedX
+    self.y = self.fixY - speedY
 end
 
 function Dynamic:throwAngle(v, alpha, throwAngleTimeMultiplier)
-    if self.action ~= "Right side crossed with obstacle's Bottom" 
-        and self.action ~= "Left side crossed with obstacle's Bottom" 
+    if self.action ~= "Right side crossed with obstacle's Bottom"
+        and self.action ~= "Left side crossed with obstacle's Bottom"
     then
-        if alpha < 90 
+        if alpha < 90 and self.statusR ~= 1
             and self.action ~= "Top side crossed with obstacle's Left"
             and self.action ~= "Bottom side crossed with obstacle's Left"
-        then 
+        then
             self.fixX = self.x
             self.fixY = self.y
             self.angle = alpha*math.pi/180
@@ -122,7 +132,8 @@ function Dynamic:throwAngle(v, alpha, throwAngleTimeMultiplier)
             self.time = 0
             self.throwAngleTimeMultiplier = throwAngleTimeMultiplier or 10
             self.statusB = 0
-        elseif alpha > 90 
+            self.statusL = 0
+        elseif alpha > 90 and self.statusL ~= 1
             and self.action ~= "Top side crossed with obstacle's Right"
             and self.action ~= "Bottom side crossed with obstacle's Right"
         then
@@ -134,6 +145,7 @@ function Dynamic:throwAngle(v, alpha, throwAngleTimeMultiplier)
             self.time = 0
             self.throwAngleTimeMultiplier = throwAngleTimeMultiplier or 10
             self.statusB = 0
+            self.statusR = 0
         end
     end
 end

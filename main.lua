@@ -7,7 +7,7 @@ function love.load()
     -- dynamic2 = Dynamic.new(100, 0, nil, nil, nil, nil, 10)
 end
 
-function love.update(dt)    
+function love.update(dt)
     dynamic:update(dt, obstacles)
     -- print(dynamic.baseSpeed)
 
@@ -26,11 +26,13 @@ function love.draw()
     for i,o in ipairs(obstacles) do
         o:draw()
     end
+    
+    love.graphics.print("Current FPS: "..tostring(love.timer.getFPS( )), 10, 10)
 end
 
 function love.keypressed(key)
     if key == "up" then
-        dynamic:throwUp(3)
+        dynamic:throwUp(5)
         -- dynamic2:throwUp(5)
     end
     if key == "left" then
