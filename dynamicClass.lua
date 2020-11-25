@@ -1,4 +1,6 @@
 g = 10
+tick = 1/60
+acc = 0
 
 Dynamic = {}
 Dynamic.__index = Dynamic
@@ -31,7 +33,15 @@ function Dynamic.new(x, y, shape, width, height, baseSpeed, maxSpeed, angle, act
 end
 
 function Dynamic:update(dt, obstacles)
+
     print("----DELTA TIME: " .. dt)
+    print("----ACC: " .. acc)
+
+    acc = acc + dt
+    if acc >= tick then
+        dt = acc
+        acc = 0
+
     if self.action == "Right side crossed with obstacle's Bottom"
         or self.action == "Left side crossed with obstacle's Bottom"
     then
@@ -71,6 +81,8 @@ function Dynamic:update(dt, obstacles)
         Dynamic.throwAngleDelta(self, dt)
     end
     Dynamic.detectCollision(self, obstacles)
+
+    end
 end
 
 function Dynamic:freeFallDelta(t)
