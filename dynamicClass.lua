@@ -42,45 +42,37 @@ function Dynamic:update(dt, obstacles)
         dt = acc
         acc = 0
 
-    if self.action == "Right side crossed with obstacle's Bottom"
-        or self.action == "Left side crossed with obstacle's Bottom"
-    then
-        self.action = "freeFall"
-        self.baseSpeed = 0
-    elseif self.action == "Top side crossed with obstacle's Left"
-        or self.action == "Bottom side crossed with obstacle's Left"
-        or self.action == "Top side crossed with obstacle's Right"
-        or self.action == "Bottom side crossed with obstacle's Right"
-    then
-        if self.statusB == 1 then
-            self.action = "Left side crossed with obstacle's Top"
-            self.statusB = 0
-        else
+        if self.action == "topBlocked" then
             self.action = "freeFall"
-            if self.baseSpeed > self.maxSpeed then
-                self.baseSpeed = 0
+            self.baseSpeed = 0
+        elseif self.action == "rightBlocked" or self.action == "leftBlocked" then
+            if self.statusB == 1 then
+                self.action = "stop"
+                self.statusB = 0
+            else
+                self.action = "freeFall"
+                if self.baseSpeed > self.maxSpeed then
+                    self.baseSpeed = 0
+                end
             end
+        elseif self.action == "stop" then
+            self.baseSpeed = 0
         end
-    elseif self.action == "Left side crossed with obstacle's Top"
-        or self.action == "Right side crossed with obstacle's Top"
-    then
-        self.action = "stop"
-        self.baseSpeed = 0
-    end
 
-    self.x = self.x
-    if self.action == "freeFall" then
-        self:freeFallDelta(dt) -- без разницы вызывать собственный метод через self./self:
-    elseif self.action == "throwUp" then
-        Dynamic.throwUpDelta(self, dt) -- или через Dynamic.
-        if self.baseSpeed <= 0 then
-            self.action = "freeFall"
-            Dynamic.freeFallDelta(self, dt) -- но при вызове через "." нужно передавать в него self
+        self.x = self.x
+
+        if self.action == "freeFall" then
+            self:freeFallDelta(dt) -- без разницы вызывать собственный метод через self./self:
+        elseif self.action == "throwUp" then
+            self:throwUpDelta(dt) -- или через Dynamic.
+            if self.baseSpeed <= 0 then
+                self.action = "freeFall"
+                self:freeFallDelta(dt) -- но при вызове через "." нужно передавать в него self
+            end
+        elseif self.action == "throwAngle" then
+            self:throwAngleDelta(dt)
         end
-    elseif self.action == "throwAngle" then
-        Dynamic.throwAngleDelta(self, dt)
-    end
-    Dynamic.detectCollision(self, obstacles)
+        Dynamic.detectCollision(self, obstacles)
 
     end
 end
@@ -110,11 +102,10 @@ function Dynamic:throwUpDelta(t)
 end
 
 function Dynamic:throwUp(v)
-    if self.action ~= "Right side crossed with obstacle's Bottom"
-        and self.action ~= "Left side crossed with obstacle's Bottom" then
-            self.baseSpeed = v
-            self.action = "throwUp"
-            self.statusB = 0
+    if self.action ~= "topBlocked" then
+        self.baseSpeed = v
+        self.action = "throwUp"
+        self.statusB = 0
     end
 end
 
@@ -129,41 +120,29 @@ function Dynamic:throwAngleDelta(t)
 end
 
 function Dynamic:throwAngle(v, alpha, throwAngleTimeMultiplier)
-    if self.action ~= "Right side crossed with obstacle's Bottom"
-        and self.action ~= "Left side crossed with obstacle's Bottom"
-    then
-        if alpha < 90 and self.statusR ~= 1
-            and self.action ~= "Top side crossed with obstacle's Left"
-            and self.action ~= "Bottom side crossed with obstacle's Left"
-        then
-            self.fixX = self.x
-            self.fixY = self.y
-            self.angle = alpha*math.pi/180
-            self.baseSpeed = v
-            self.action = "throwAngle"
-            self.time = 0
-            self.throwAngleTimeMultiplier = throwAngleTimeMultiplier or 10
-            self.statusB = 0
+    if self.action ~= "topBlocked" then
+        if alpha < 90 and self.statusR ~= 1 and self.action ~= "rightBlocked" then
+            self:applyAngleMovement(v, alpha, throwAngleTimeMultiplier)
             self.statusL = 0
-        elseif alpha > 90 and self.statusL ~= 1
-            and self.action ~= "Top side crossed with obstacle's Right"
-            and self.action ~= "Bottom side crossed with obstacle's Right"
-        then
-            self.fixX = self.x
-            self.fixY = self.y
-            self.angle = alpha*math.pi/180
-            self.baseSpeed = v
-            self.action = "throwAngle"
-            self.time = 0
-            self.throwAngleTimeMultiplier = throwAngleTimeMultiplier or 10
-            self.statusB = 0
+        elseif alpha > 90 and self.statusL ~= 1 and self.action ~= "leftBlocked" then
+            self:applyAngleMovement(v, alpha, throwAngleTimeMultiplier)
             self.statusR = 0
         end
     end
 end
 
-function Dynamic:detectCollision(obstacles)
+function Dynamic:applyAngleMovement(v, alpha, throwAngleTimeMultiplier)
+    self.fixX = self.x
+    self.fixY = self.y
+    self.angle = alpha*math.pi/180
+    self.baseSpeed = v
+    self.action = "throwAngle"
+    self.time = 0
+    self.throwAngleTimeMultiplier = throwAngleTimeMultiplier or 10
+    self.statusB = 0
+end
 
+function Dynamic:detectCollision(obstacles)
     local left = {x1 = self.x, y1 = self.y - 5, x2 = self.x, y2 = self.y + self.height + 5}
     local right = {x1 = self.x + self.width, y1 = self.y - 5, x2 = self.x + self.width, y2 = self.y + self.height + 5}
 
@@ -173,59 +152,36 @@ function Dynamic:detectCollision(obstacles)
     for i,o in ipairs(obstacles) do
         local o_left = {x1 = o.x, y1 = o.y, x2 = o.x, y2 = o.y + o.height}
         local o_right = {x1 = o.x + o.width, y1 = o.y, x2 = o.x + o.width, y2 = o.y + o.height}
-
         local o_top = {x1 = o.x, y1 = o.y, x2 = o.x + o.width, y2 = o.y}
         local o_bottom = {x1 = o.x, y1 = o.y + o.height, x2 = o.x + o.width, y2 = o.y + o.height}
 
         inter1 = checkIntersection(left, o_top)
         inter2 = checkIntersection(right, o_top)
-
         inter3 = checkIntersection(left, o_bottom)
         inter4 = checkIntersection(right, o_bottom)
-
-
-
         inter5 = checkIntersection(top, o_left)
         inter6 = checkIntersection(bottom, o_left)
-
         inter7 = checkIntersection(top, o_right)
         inter8 = checkIntersection(bottom, o_right)
 
-        if inter1 then
-            self.action = "Left side crossed with obstacle's Top"
+        if inter1 or inter2 then
             self.statusB = 1
-        end
-        if inter2 then
-            self.action = "Right side crossed with obstacle's Top"
-            self.statusB = 1
+            self.action = "stop"
         end
 
-        if inter3 then
-            self.action = "Left side crossed with obstacle's Bottom"
+        if inter3 or inter4 then
             self.statusT = 1
-        end
-        if inter4 then
-            self.action = "Right side crossed with obstacle's Bottom"
-            self.statusT = 1
+            self.action = "topBlocked"
         end
 
-
-
-        if inter5 and self.action ~="throwUp" then
-            self.action = "Top side crossed with obstacle's Left"
+        if (inter5 or inter6) and self.action ~= "throwUp" then
             self.statusR = 1
+            self.action = "rightBlocked"
         end
-        if inter6 and self.action ~="throwUp" then
-            self.action = "Bottom side crossed with obstacle's Left"
-            self.statusR = 1
-        end
-        if inter7 and self.action ~="throwUp" then
-            self.action = "Top side crossed with obstacle's Right"
+
+        if (inter7 or inter8) and self.action ~= "throwUp" then
             self.statusL = 1
-        end
-        if inter8 and self.action ~="throwUp" then
-            self.action = "Bottom side crossed with obstacle's Right"
-            self.statusL = 1
+            self.action = "leftBlocked"
         end
     end
 end
