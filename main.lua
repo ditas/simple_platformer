@@ -8,7 +8,23 @@ function love.load()
 end
 
 function love.update(dt)
-    dynamic:update(dt, obstacles)
+
+    if love.keyboard.isDown("q") then
+        dynamic:update(dt, obstacles, "left")
+    elseif love.keyboard.isDown("e") then
+        dynamic:update(dt, obstacles, "right")
+    else
+        dynamic:update(dt, obstacles, "none")
+    end
+
+    -- dynamic:update(dt, obstacles)
+
+    -- if love.keyboard.isDown("q") then
+    --     dynamic:moveLeft(100)
+    -- elseif love.keyboard.isDown("e") then
+    --     dynamic:moveRight(100)
+    -- end
+
     -- print(dynamic.baseSpeed)
 
     -- dynamic2:update(dt, obstacles)
@@ -44,9 +60,18 @@ function love.keypressed(key)
         -- dynamic2:throwAngle(50, 45)
     end
 
-    if key == "q" then
-        dynamic:throwAngle(50, 90)
-    end
+    -- if key == "q" then
+    --     dynamic:moveLeft(250)
+    -- end
+    -- if key == "e" then
+    --     dynamic:moveRight(250)
+    -- end
+    -- if key == "q" then
+    --     dynamic:throwAngle(150, 180)
+    -- end
+    -- if key == "e" then
+    --     dynamic:throwAngle(150, 0)
+    -- end
 
     if key == "w" then
         spawnObstacle(0, 0, 300, 50)

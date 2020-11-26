@@ -28,15 +28,61 @@ function Dynamic.new(x, y, shape, width, height, baseSpeed, maxSpeed, angle, act
     o.statusR = 0
     o.statusB = 0
 
+    -- direction test
+    o.platform = {0, 0}
+    -----------------
+
     setmetatable(o, Dynamic)
     return o
 end
 
-function Dynamic:update(dt, obstacles)
+function Dynamic:update(dt, obstacles, direction)
+
+    print("---------ACTION: " .. self.action .. " DIR: " .. direction .. " statusB: " .. self.statusB .. " statusL: " .. self.statusL .. " statusR: " .. self.statusR)
+
     acc = acc + dt
     if acc >= tick then
         dt = acc
         acc = 0
+
+        -- direction test
+        if self.statusB == 1 and self.x + self.width > self.platform[1] and self.x < self.platform[2] then
+            if direction == "left" and self.statusL ~= 1 then
+                self.x = self.x - 100 * dt
+                self.statusR = 0
+            elseif direction == "right" and self.statusR ~= 1 then
+                self.x = self.x + 100 * dt
+                self.statusL = 0
+            end
+        elseif self.statusB == 1 then
+            self.statusB = 0
+            self.action = "freeFall"
+        end
+
+        -- if self.statusB == 1 then
+        --     if direction == "left" and self.statusL ~= 1 then
+        --         if self.x > self.platform[1] then
+        --             self.x = self.x - 100 * dt
+        --             self.statusR = 0
+        --             self.left = 1
+        --         else
+        --             self.action = "freeFall"
+        --         end
+        --     elseif direction == "right" and self.statusR ~= 1 then
+        --         if self.x < self.platform[2] then
+        --             self.x = self.x + 100 * dt
+        --             self.statusL = 0
+        --             self.right = 1
+        --         else
+        --             self.action = "freeFall"
+        --         end
+        --     else
+        --         self.x = self.x
+        --         self.left = 0
+        --         self.right = 0
+        --     end
+        -- end
+        -----------------
 
         if self.action == "topBlocked" then
             self.action = "freeFall"
@@ -44,7 +90,7 @@ function Dynamic:update(dt, obstacles)
         elseif self.action == "rightBlocked" or self.action == "leftBlocked" then
             if self.statusB == 1 then
                 self.action = "stop"
-                self.statusB = 0
+                -- self.statusB = 0
             else
                 self.action = "freeFall"
                 if self.baseSpeed > self.maxSpeed then
@@ -55,7 +101,7 @@ function Dynamic:update(dt, obstacles)
             self.baseSpeed = 0
         end
 
-        self.x = self.x
+        -- self.x = self.x
 
         if self.action == "freeFall" then
             self:freeFallDelta(dt) -- без разницы вызывать собственный метод через self./self:
@@ -158,6 +204,7 @@ function Dynamic:detectCollision(obstacles)
         if inter1 or inter2 then
             self.statusB = 1
             self.action = "stop"
+            self.platform = {o.x, o.x + o.width}
         end
 
         if inter3 or inter4 then
