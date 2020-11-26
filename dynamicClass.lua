@@ -33,10 +33,6 @@ function Dynamic.new(x, y, shape, width, height, baseSpeed, maxSpeed, angle, act
 end
 
 function Dynamic:update(dt, obstacles)
-
-    print("----DELTA TIME: " .. dt)
-    print("----ACC: " .. acc)
-
     acc = acc + dt
     if acc >= tick then
         dt = acc
@@ -80,11 +76,9 @@ end
 function Dynamic:freeFallDelta(t)
     if self.baseSpeed < self.maxSpeed then
         speed = self.baseSpeed + g*t
-        print("--1--ff DELTA SPEED: " .. speed)
         self.y = self.y + speed
     else
         speed = self.baseSpeed
-        print("--2--ff DELTA SPEED: " .. speed)
         self.y = self.y + speed
     end
     self.baseSpeed = speed
@@ -95,7 +89,6 @@ end
 function Dynamic:throwUpDelta(t)
     if self.baseSpeed > 0 then
         speed = self.baseSpeed - g*t
-        print("----tu DELTA SPEED: " .. speed)
         self.y = self.y - speed
         self.baseSpeed = speed
     end
@@ -113,8 +106,6 @@ function Dynamic:throwAngleDelta(t)
     self.time = self.time + t*self.throwAngleTimeMultiplier
     local speedX = self.baseSpeed*math.cos(self.angle)*self.time
     local speedY = (self.baseSpeed*math.sin(self.angle)*self.time - (g*self.time^2)/2)
-    print("----ta DELTA SPEED X: " .. speedX)
-    print("----ta DELTA SPEED Y: " .. speedY)
     self.x = self.fixX + speedX
     self.y = self.fixY - speedY
 end
