@@ -1,12 +1,13 @@
 g = 10
 tick = 1/60
-acc = 0
 
 Dynamic = {}
 Dynamic.__index = Dynamic
 
 function Dynamic.new(x, y, shape, width, height, baseSpeed, maxSpeed, angle, action, obstacles)
     local o = {}
+    o.type = "dynamic"
+
     o.x = x or 0
     o.y = y or 0
     o.shape = shape or "rectangle"
@@ -30,6 +31,8 @@ function Dynamic.new(x, y, shape, width, height, baseSpeed, maxSpeed, angle, act
 
     o.platform = {0, 0}
 
+    o.acc = 0
+
     setmetatable(o, Dynamic)
     return o
 end
@@ -38,10 +41,10 @@ function Dynamic:update(dt, obstacles, direction)
 
     -- print("---------ACTION: " .. self.action .. " DIR: " .. direction .. " statusB: " .. self.statusB .. " statusL: " .. self.statusL .. " statusR: " .. self.statusR)
 
-    acc = acc + dt
-    if acc >= tick then
-        dt = acc
-        acc = 0
+    self.acc = self.acc + dt
+    if self.acc >= tick then
+        dt = self.acc
+        self.acc = self.acc - tick -- seems better to do this instead of self.acc = 0, to smooth the movement
 
         if self.statusB == 1 and self.x + self.width > self.platform[1] and self.x < self.platform[2] then
             if direction == "left" and self.statusL ~= 1 then
@@ -83,7 +86,7 @@ function Dynamic:update(dt, obstacles, direction)
         elseif self.action == "throwAngle" then
             self:throwAngleDelta(dt)
         end
-        
+
         Dynamic.detectCollision(self, obstacles)
 
     end
