@@ -90,6 +90,8 @@ function Dynamic:update(dt, obstacles, direction)
         Dynamic.detectCollision(self, obstacles)
 
     end
+
+    return self
 end
 
 function Dynamic:freeFallDelta(t)
