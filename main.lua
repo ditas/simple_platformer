@@ -49,7 +49,7 @@ function love.update(dt)
             player = dynamic:update(dt, obstacles, "none")
         end    
 
-        dynamic2:update(dt, obstacles, "none")
+        -- dynamic2:update(dt, obstacles, "none")
         dynamic3:update(dt, obstacles, "none")
         dynamic4:update(dt, obstacles, "none")
         dynamic5:update(dt, obstacles, "none")
