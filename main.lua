@@ -1,10 +1,4 @@
 -- network test
--- local socket = require("socket")
--- local address, port = "localhost", 5555
--- local timeStamp
--- local updateRate = 0.1 -- 1/10 of sec
--- local client
--- local t
 local socket = require("socket")
 local address, port = "127.0.0.1", 5555
 local timeStamp
@@ -48,19 +42,6 @@ function love.load()
         udp:send(dg)
         udp:setpeername("*")
     end
-
-    -- timeStamp = tostring(os.time())
-    -- local dg = string.format("%s %d %s %s", 'init', timeStamp, 'test_match', 'test_player2')
-    --
-    -- t = 0
-    --
-    -- local ip = assert(socket.dns.toip(address))
-    --
-    -- udp = socket.udp()
-    -- udp:settimeout(5)
-    -- udp:setpeername(address, port)
-    -- udp:send(dg)
-    -- udp:setpeername("*")
     ---------------
 
     gameState = 1
@@ -70,58 +51,40 @@ dtotal = 0
 function love.update(dt)
     dtotal = dtotal + dt
 
-if dtotal >= 0.017 then
-    dtotal = dtotal - 0.017
-    dt = 0.017
+    if dtotal >= 0.01666 then
+        dtotal = dtotal - 0.01666
+        dt = 0.01666
 
-    if gameState == 2 then
-        if love.keyboard.isDown("q") then
-            player = dynamic:update(dt, obstacles, "left")
-        elseif love.keyboard.isDown("e") then
-            player = dynamic:update(dt, obstacles, "right")
-        else
-            player = dynamic:update(dt, obstacles, "none")
-        end
+        if gameState == 2 then
+            if love.keyboard.isDown("q") then
+                player = dynamic:update(dt, obstacles, "left")
+            elseif love.keyboard.isDown("e") then
+                player = dynamic:update(dt, obstacles, "right")
+            else
+                player = dynamic:update(dt, obstacles, "none")
+            end
 
-        -- dynamic2:update(dt, obstacles, "none")
-        dynamic3:update(dt, obstacles, "none")
-        dynamic4:update(dt, obstacles, "none")
-        dynamic5:update(dt, obstacles, "none")
+            -- dynamic2:update(dt, obstacles, "none")
+            dynamic3:update(dt, obstacles, "none")
+            dynamic4:update(dt, obstacles, "none")
+            dynamic5:update(dt, obstacles, "none")
 
-        for i,o in ipairs(obstacles) do
-            if o.type == "static" then
-                o:update(dt)
+            for i,o in ipairs(obstacles) do
+                if o.type == "static" then
+                    o:update(dt)
+                end
             end
         end
+
     end
 
-end
-
     -- network test
-    -- t = t + dt
-    --
-    -- if not client then
-    --     data, from_ip, from_port = udp:receivefrom()
-    --     -- print(data)
-    --     -- print(from_ip)
-    --     -- print(from_port)
-    --
-    --     udp:setpeername(from_ip, from_port)
-    --     client = udp
-    --     client:settimeout(0)
-    --
-    --     gameState = 2
     t = t + dt
 
     if not client then
-
-        -- udp:send("test123")
-        -- udp:settimeout(10)
-        -- udp:setpeername("*")
-
         data, from_ip, from_port = udp:receivefrom()
-        print(from_ip)
-        print(from_port)
+        -- print(from_ip)
+        -- print(from_port)
 
         udp:setpeername(from_ip, from_port)
 
