@@ -42,89 +42,75 @@ function Dynamic:update(dt, obstacles, direction)
     print("dt 1 "..dt)
     print("---------ACTION: " .. self.action .. " DIR: " .. direction .. " statusB: " .. self.statusB .. " statusL: " .. self.statusL .. " statusR: " .. self.statusR)
 
-    -- self.acc = self.acc + dt
-    -- if self.acc >= tick then
-    --     dt = self.acc
-    --     print("dt 2 "..dt)
-    --     self.acc = self.acc - tick -- seems better to do this instead of self.acc = 0, to smooth the movement
+    -- stuck prevention
+    if self.statusB == 1 and self.statusL == 1 then
+        self.x = self.x + 0.5
+        self.y = self.y - 0.5
+        self.statusL = 0
+        -- self.statusB = 0
+    end
 
-    -- if self.acc < tick then
-    --     self.acc = self.acc + dt
-    -- elseif self.acc >= tick then
-    --     dt = self.acc
-    --     print("dt 2 "..dt)
-    --     self.acc = self.acc - tick -- seems better to do this instead of self.acc = 0, to smooth the movement
+    if self.statusB == 1 and self.statusR == 1 then
+        self.x = self.x - 0.5
+        self.y = self.y - 0.5
+        self.statusR = 0
+        -- self.statusB = 0
+    end
 
-    -- if dt < tick then
-    --     self.acc = self.acc + dt
-    -- end
-    -- if self.acc >= tick then
-    --     dt = self.acc
-    --     print("dt 2 "..dt)
-    --     self.acc = self.acc - tick
-
-        -- stuck prevention
-        if self.statusB == 1 and self.statusL == 1 then
-            self.x = self.x + 0.5
-            self.y = self.y - 0.5
-            self.statusL = 0
-            -- self.statusB = 0
-        end
-
-        if self.statusB == 1 and self.statusR == 1 then
-            self.x = self.x - 0.5
-            self.y = self.y - 0.5
-            self.statusR = 0
-            -- self.statusB = 0
-        end
-        -------------------
-
-        if self.statusB == 1 and self.x + self.width > self.platform[1] and self.x < self.platform[2] then
-            if direction == "left" and self.statusL ~= 1 then
-                self.x = self.x - 100 * dt
-                self.statusR = 0
-            elseif direction == "right" and self.statusR ~= 1 then
-                self.x = self.x + 100 * dt
-                self.statusL = 0
-            end
-            self.platform = {0, 0}
-        elseif self.statusB == 1 then
+    -- print(self.y + self.height + 7.5)
+    -- print(self.platform[3])
+    if self.statusB == 1 and self.platform[3] ~= nil then
+        if self.y+self.height+7.5 >= self.platform[3] then
+            self.y = self.y - 1
             self.statusB = 0
+        end
+    end
+    -------------------
+
+    if self.statusB == 1 and self.x + self.width > self.platform[1] and self.x < self.platform[2] then
+        if direction == "left" and self.statusL ~= 1 then
+            self.x = self.x - 100 * dt
+            self.statusR = 0
+        elseif direction == "right" and self.statusR ~= 1 then
+            self.x = self.x + 100 * dt
+            self.statusL = 0
+        end
+        self.platform = {0, 0}
+    elseif self.statusB == 1 then
+        self.statusB = 0
+        self.action = "freeFall"
+        self.platform = {0, 0}
+    end
+
+    if self.action == "topBlocked" then
+        self.action = "freeFall"
+        self.baseSpeed = 0
+    elseif self.action == "rightBlocked" or self.action == "leftBlocked" then
+        if self.statusB == 1 then
+            self.action = "stop"
+        else
             self.action = "freeFall"
-            self.platform = {0, 0}
+            if self.baseSpeed > self.maxSpeed then
+                self.baseSpeed = 0
+            end
         end
+    elseif self.action == "stop" then
+        self.baseSpeed = 0
+    end
 
-        if self.action == "topBlocked" then
+    if self.action == "freeFall" then
+        self:freeFallDelta(dt) -- без разницы вызывать собственный метод через self./self:
+    elseif self.action == "throwUp" then
+        self:throwUpDelta(dt) -- или через Dynamic.
+        if self.baseSpeed <= 0 then
             self.action = "freeFall"
-            self.baseSpeed = 0
-        elseif self.action == "rightBlocked" or self.action == "leftBlocked" then
-            if self.statusB == 1 then
-                self.action = "stop"
-            else
-                self.action = "freeFall"
-                if self.baseSpeed > self.maxSpeed then
-                    self.baseSpeed = 0
-                end
-            end
-        elseif self.action == "stop" then
-            self.baseSpeed = 0
+            self:freeFallDelta(dt) -- но при вызове через "." нужно передавать в него self
         end
+    elseif self.action == "throwAngle" then
+        self:throwAngleDelta(dt)
+    end
 
-        if self.action == "freeFall" then
-            self:freeFallDelta(dt) -- без разницы вызывать собственный метод через self./self:
-        elseif self.action == "throwUp" then
-            self:throwUpDelta(dt) -- или через Dynamic.
-            if self.baseSpeed <= 0 then
-                self.action = "freeFall"
-                self:freeFallDelta(dt) -- но при вызове через "." нужно передавать в него self
-            end
-        elseif self.action == "throwAngle" then
-            self:throwAngleDelta(dt)
-        end
-
-        Dynamic.detectCollision(self, obstacles)
-
-    -- end
+    Dynamic.detectCollision(self, obstacles)
 
     return self
 end
@@ -191,12 +177,6 @@ function Dynamic:applyAngleMovement(v, alpha, throwAngleTimeMultiplier)
 end
 
 function Dynamic:detectCollision(obstacles)
-    -- local left = {x1 = self.x, y1 = self.y - 5, x2 = self.x, y2 = self.y + self.height + 5}
-    -- local right = {x1 = self.x + self.width, y1 = self.y - 5, x2 = self.x + self.width, y2 = self.y + self.height + 5}
-
-    -- local top = {x1 = self.x - 5, y1 = self.y, x2 = self.x + self.width + 5, y2 = self.y}
-    -- local bottom = {x1 = self.x - 5, y1 = self.y + self.height, x2 = self.x + self.width + 5, y2 = self.y + self.height}
-
     local left = {x1 = self.x, y1 = self.y - 7.5, x2 = self.x, y2 = self.y + self.height + 7.5}
     local right = {x1 = self.x + self.width, y1 = self.y - 7.5, x2 = self.x + self.width, y2 = self.y + self.height + 7.5}
 
@@ -221,7 +201,7 @@ function Dynamic:detectCollision(obstacles)
         if inter1 or inter2 then
             self.statusB = 1
             self.action = "stop"
-            self.platform = {o.x, o.x + o.width}
+            self.platform = {o.x, o.x + o.width, o.y}
         end
 
         if inter3 or inter4 then
