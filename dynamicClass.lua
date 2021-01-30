@@ -61,8 +61,7 @@ function Dynamic:update(dt, obstacles, direction)
     -- print(self.platform[3])
     if self.statusB == 1 and self.platform[3] ~= nil then
         if self.y+self.height+7.5 >= self.platform[3] then
-            self.y = self.y - 1
-            self.statusB = 0
+            self.y = self.y - 0.1
         end
     end
     -------------------
