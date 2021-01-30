@@ -1,5 +1,5 @@
-g = 10
-tick = 1/60
+local g = 10
+local tick = 1/60
 
 Dynamic = {}
 Dynamic.__index = Dynamic
@@ -22,7 +22,7 @@ function Dynamic.new(x, y, shape, width, height, baseSpeed, maxSpeed, angle, act
     o.time = 0
     o.fixX = 0
     o.fixY = 0
-    o.throwAngleTimeMultiplier = 10
+    o.throwAngleTimeMultiplier = 1
 
     o.statusL = 0
     o.statusT = 0
@@ -39,12 +39,45 @@ end
 
 function Dynamic:update(dt, obstacles, direction)
 
-    -- print("---------ACTION: " .. self.action .. " DIR: " .. direction .. " statusB: " .. self.statusB .. " statusL: " .. self.statusL .. " statusR: " .. self.statusR)
+    print("dt 1 "..dt)
+    print("---------ACTION: " .. self.action .. " DIR: " .. direction .. " statusB: " .. self.statusB .. " statusL: " .. self.statusL .. " statusR: " .. self.statusR)
 
-    self.acc = self.acc + dt
-    if self.acc >= tick then
-        dt = self.acc
-        self.acc = self.acc - tick -- seems better to do this instead of self.acc = 0, to smooth the movement
+    -- self.acc = self.acc + dt
+    -- if self.acc >= tick then
+    --     dt = self.acc
+    --     print("dt 2 "..dt)
+    --     self.acc = self.acc - tick -- seems better to do this instead of self.acc = 0, to smooth the movement
+
+    -- if self.acc < tick then
+    --     self.acc = self.acc + dt
+    -- elseif self.acc >= tick then
+    --     dt = self.acc
+    --     print("dt 2 "..dt)
+    --     self.acc = self.acc - tick -- seems better to do this instead of self.acc = 0, to smooth the movement
+
+    -- if dt < tick then
+    --     self.acc = self.acc + dt
+    -- end
+    -- if self.acc >= tick then
+    --     dt = self.acc
+    --     print("dt 2 "..dt)
+    --     self.acc = self.acc - tick
+
+        -- stuck prevention
+        if self.statusB == 1 and self.statusL == 1 then
+            self.x = self.x + 0.5
+            self.y = self.y - 0.5
+            self.statusL = 0
+            -- self.statusB = 0
+        end
+
+        if self.statusB == 1 and self.statusR == 1 then
+            self.x = self.x - 0.5
+            self.y = self.y - 0.5
+            self.statusR = 0
+            -- self.statusB = 0
+        end
+        -------------------
 
         if self.statusB == 1 and self.x + self.width > self.platform[1] and self.x < self.platform[2] then
             if direction == "left" and self.statusL ~= 1 then
@@ -54,9 +87,11 @@ function Dynamic:update(dt, obstacles, direction)
                 self.x = self.x + 100 * dt
                 self.statusL = 0
             end
+            self.platform = {0, 0}
         elseif self.statusB == 1 then
             self.statusB = 0
             self.action = "freeFall"
+            self.platform = {0, 0}
         end
 
         if self.action == "topBlocked" then
@@ -89,7 +124,7 @@ function Dynamic:update(dt, obstacles, direction)
 
         Dynamic.detectCollision(self, obstacles)
 
-    end
+    -- end
 
     return self
 end
@@ -108,6 +143,7 @@ function Dynamic:freeFallDelta(t)
 end
 
 function Dynamic:throwUpDelta(t)
+    print(t)
     if self.baseSpeed > 0 then
         speed = self.baseSpeed - g*t
         self.y = self.y - speed
@@ -155,11 +191,17 @@ function Dynamic:applyAngleMovement(v, alpha, throwAngleTimeMultiplier)
 end
 
 function Dynamic:detectCollision(obstacles)
-    local left = {x1 = self.x, y1 = self.y - 5, x2 = self.x, y2 = self.y + self.height + 5}
-    local right = {x1 = self.x + self.width, y1 = self.y - 5, x2 = self.x + self.width, y2 = self.y + self.height + 5}
+    -- local left = {x1 = self.x, y1 = self.y - 5, x2 = self.x, y2 = self.y + self.height + 5}
+    -- local right = {x1 = self.x + self.width, y1 = self.y - 5, x2 = self.x + self.width, y2 = self.y + self.height + 5}
 
-    local top = {x1 = self.x - 5, y1 = self.y, x2 = self.x + self.width + 5, y2 = self.y}
-    local bottom = {x1 = self.x - 5, y1 = self.y + self.height, x2 = self.x + self.width + 5, y2 = self.y + self.height}
+    -- local top = {x1 = self.x - 5, y1 = self.y, x2 = self.x + self.width + 5, y2 = self.y}
+    -- local bottom = {x1 = self.x - 5, y1 = self.y + self.height, x2 = self.x + self.width + 5, y2 = self.y + self.height}
+
+    local left = {x1 = self.x, y1 = self.y - 7.5, x2 = self.x, y2 = self.y + self.height + 7.5}
+    local right = {x1 = self.x + self.width, y1 = self.y - 7.5, x2 = self.x + self.width, y2 = self.y + self.height + 7.5}
+
+    local top = {x1 = self.x - 7.5, y1 = self.y, x2 = self.x + self.width + 7.5, y2 = self.y}
+    local bottom = {x1 = self.x - 7.5, y1 = self.y + self.height, x2 = self.x + self.width + 7.5, y2 = self.y + self.height}
 
     for i,o in ipairs(obstacles) do
         local o_left = {x1 = o.x, y1 = o.y, x2 = o.x, y2 = o.y + o.height}

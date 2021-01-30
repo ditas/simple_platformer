@@ -1,6 +1,12 @@
 -- network test
+-- local socket = require("socket")
+-- local address, port = "localhost", 5555
+-- local timeStamp
+-- local updateRate = 0.1 -- 1/10 of sec
+-- local client
+-- local t
 local socket = require("socket")
-local address, port = "localhost", 5555
+local address, port = "127.0.0.1", 5555
 local timeStamp
 local updateRate = 0.1 -- 1/10 of sec
 local client
@@ -23,22 +29,50 @@ function love.load()
     spawnObstacle(300, 300, 600, 50) -- create platform
 
     -- network test
+    local osString = love.system.getOS()
+    print(osString)
+
     timeStamp = tostring(os.time())
     local dg = string.format("%s %d %s %s", 'init', timeStamp, 'test_match', 'test_player1')
 
     t = 0
 
-    local ip = assert(socket.dns.toip(address))
     udp = socket.udp()
-    udp:setsockname("*", 0) -- bind on any availible port and local(?) ip address.
     udp:settimeout(5)
-    udp:sendto(dg, ip, port) 
+    if osString == "Linux" then
+        local ip = assert(socket.dns.toip(address))
+        udp:setsockname("*", 0) -- bind on any availible port and local(?) ip address.
+        udp:sendto(dg, ip, port)
+    else
+        udp:setpeername(address, port)
+        udp:send(dg)
+        udp:setpeername("*")
+    end
+
+    -- timeStamp = tostring(os.time())
+    -- local dg = string.format("%s %d %s %s", 'init', timeStamp, 'test_match', 'test_player2')
+    --
+    -- t = 0
+    --
+    -- local ip = assert(socket.dns.toip(address))
+    --
+    -- udp = socket.udp()
+    -- udp:settimeout(5)
+    -- udp:setpeername(address, port)
+    -- udp:send(dg)
+    -- udp:setpeername("*")
     ---------------
 
     gameState = 1
 end
 
+dtotal = 0
 function love.update(dt)
+    dtotal = dtotal + dt
+
+if dtotal >= 0.017 then
+    dtotal = dtotal - 0.017
+    dt = 0.017
 
     if gameState == 2 then
         if love.keyboard.isDown("q") then
@@ -47,7 +81,7 @@ function love.update(dt)
             player = dynamic:update(dt, obstacles, "right")
         else
             player = dynamic:update(dt, obstacles, "none")
-        end    
+        end
 
         -- dynamic2:update(dt, obstacles, "none")
         dynamic3:update(dt, obstacles, "none")
@@ -61,16 +95,36 @@ function love.update(dt)
         end
     end
 
+end
+
     -- network test
+    -- t = t + dt
+    --
+    -- if not client then
+    --     data, from_ip, from_port = udp:receivefrom()
+    --     -- print(data)
+    --     -- print(from_ip)
+    --     -- print(from_port)
+    --
+    --     udp:setpeername(from_ip, from_port)
+    --     client = udp
+    --     client:settimeout(0)
+    --
+    --     gameState = 2
     t = t + dt
 
     if not client then
+
+        -- udp:send("test123")
+        -- udp:settimeout(10)
+        -- udp:setpeername("*")
+
         data, from_ip, from_port = udp:receivefrom()
-        -- print(data)
-        -- print(from_ip)
-        -- print(from_port)
+        print(from_ip)
+        print(from_port)
 
         udp:setpeername(from_ip, from_port)
+
         client = udp
         client:settimeout(0)
 
@@ -81,11 +135,11 @@ function love.update(dt)
         client:send(dg)
         t = t - updateRate
     else
-        update = client:receive()
+        local update = client:receive()
         -- print(update)
-        player_update = {}
+        local player_update = {}
         if update then
-            for w in update:gmatch("%S+") do 
+            for w in update:gmatch("%S+") do
                 -- print(w)
                 table.insert(player_update, w)
             end
@@ -107,7 +161,7 @@ function love.draw()
     for i,o in ipairs(obstacles) do
         o:draw()
     end
-    
+
     love.graphics.print("Current FPS: "..tostring(love.timer.getFPS( )), 10, 10)
 end
 
