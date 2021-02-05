@@ -14,7 +14,7 @@ function Dynamic.new(x, y, shape, width, height, baseSpeed, maxSpeed, angle, act
     o.width = width or 50
     o.height = height or 50
     o.baseSpeed = baseSpeed or 0
-    o.maxSpeed = maxSpeed or 5
+    o.maxSpeed = maxSpeed or 10
     o.action = action or "freeFall" -- | throwUp | throwAngle | stop
     o.obstacles = obstacles or {}
 
