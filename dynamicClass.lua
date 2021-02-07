@@ -37,6 +37,42 @@ function Dynamic.new(x, y, shape, width, height, baseSpeed, maxSpeed, angle, act
     return o
 end
 
+function Dynamic:setUpdateData(
+    x,
+    y,
+    width,
+    height,
+    baseSpeed,
+    maxSpeed,
+    action,
+    angle,
+    time,
+    fixX,
+    fixY,
+    throwAngleTimeMultiplier,
+    statusL,
+    statusT,
+    statusR,
+    statusB
+)
+    self.x = tonumber(x)
+    self.y = tonumber(y)
+    self.width = tonumber(width)
+    self.height = tonumber(height)
+    self.baseSpeed = tonumber(baseSpeed)
+    self.maxSpeed = tonumber(maxSpeed)
+    self.action = action
+    self.angle = tonumber(angle)
+    self.time = tonumber(time)
+    self.fixX = tonumber(fixX)
+    self.fixY = tonumber(fixY)
+    self.throwAngleTimeMultiplier = tonumber(throwAngleTimeMultiplier)
+    self.statusL = tonumber(statusL)
+    self.statusT = tonumber(statusT)
+    self.statusR = tonumber(statusR)
+    self.statusB = tonumber(statusB)
+end
+
 function Dynamic:update(dt, obstacles, direction)
 
     print("dt 1 "..dt)

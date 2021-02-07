@@ -64,7 +64,7 @@ function love.update(dt)
                 player = dynamic:update(dt, obstacles, "none")
             end
 
-            -- dynamic2:update(dt, obstacles, "none")
+            dynamic2:update(dt, obstacles, "none")
             dynamic3:update(dt, obstacles, "none")
             dynamic4:update(dt, obstacles, "none")
             dynamic5:update(dt, obstacles, "none")
@@ -94,7 +94,50 @@ function love.update(dt)
         gameState = 2
     elseif t > updateRate then
         timeStamp = tostring(os.time())
-        local dg = string.format("%s %d %f %f", 'move', timeStamp, player.x, player.y)
+
+        -- o.x = x or 0
+        -- o.y = y or 0
+        -- o.shape = shape or "rectangle"
+        -- o.width = width or 50
+        -- o.height = height or 50
+        -- o.baseSpeed = baseSpeed or 0
+        -- o.maxSpeed = maxSpeed or 10
+        -- o.action = action or "freeFall" -- | throwUp | throwAngle | stop
+        -- o.obstacles = obstacles or {}
+        --
+        -- o.angle = 0 -- in rads
+        -- o.time = 0
+        -- o.fixX = 0
+        -- o.fixY = 0
+        -- o.throwAngleTimeMultiplier = 1
+        --
+        -- o.statusL = 0
+        -- o.statusT = 0
+        -- o.statusR = 0
+        -- o.statusB = 0
+        --
+        -- o.platform = {0, 0}
+        --
+        -- o.acc = 0
+
+        local dg = string.format("%s %d %f %f %f %f %f %f %s %f %f %f %f %f %f %f %f %f", 'move', timeStamp,
+            player.x,
+            player.y,
+            player.width,
+            player.height,
+            player.baseSpeed,
+            player.maxSpeed,
+            player.action,
+            player.angle,
+            player.time,
+            player.fixX,
+            player.fixY,
+            player.throwAngleTimeMultiplier,
+            player.statusL,
+            player.statusT,
+            player.statusR,
+            player.statusB
+        )
         client:send(dg)
         t = t - updateRate
     else
@@ -107,8 +150,27 @@ function love.update(dt)
                 table.insert(player_update, w)
             end
 
-            dynamic2.x = tonumber(player_update[3])
-            dynamic2.y = tonumber(player_update[4])
+            -- dynamic2.x = tonumber(player_update[3])
+            -- dynamic2.y = tonumber(player_update[4])
+            dynamic2:setUpdateData(
+                player_update[3],
+                player_update[4],
+                player_update[5],
+                player_update[6],
+                player_update[7],
+                player_update[8],
+                player_update[9],
+                player_update[10],
+                player_update[11],
+                player_update[12],
+                player_update[13],
+                player_update[14],
+                player_update[15],
+                player_update[16],
+                player_update[17],
+                player_update[18],
+                player_update[19]
+            )
         end
     end
     ---------------
