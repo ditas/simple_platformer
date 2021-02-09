@@ -11,9 +11,20 @@ function love.load()
     require("staticClass")
     obstacles = {}
 
+    -- animation test
+    img = love.graphics.newImage("hero_right.png")
+    anim = newAnimation(img, 16, 18, 1)
+    -----------------
+
     require("dynamicClass")
-    dynamic = Dynamic.new(500, 0, nil, nil, nil, nil, 10)
-    dynamic2 = Dynamic.new(400, 0, nil, nil, nil, nil, 10)
+    dynamic = Dynamic.new(500, 0, nil, 16, 18, nil, 10)
+    dynamic2 = Dynamic.new(400, 0, nil, 16, 18, nil, 10)
+
+    -- animation test
+    dynamic:setAnimation(anim)
+    dynamic2:setAnimation(anim)
+    -----------------
+
     dynamic3 = Dynamic.new(300, 0, nil, nil, nil, nil, 10)
     dynamic4 = Dynamic.new(600, 0, nil, nil, nil, nil, 10)
     dynamic5 = Dynamic.new(700, 0, nil, nil, nil, nil, 10)
@@ -56,9 +67,25 @@ function love.update(dt)
         dt = 0.01666
 
         if gameState == 2 then
+
+            -- -- animation test
+            -- anim.currentTime = anim.currentTime + dt
+            -- if anim.currentTime >= anim.duration then
+            --     anim.currentTime = anim.currentTime - anim.duration
+            -- end
+            -- -----------------
+
             if love.keyboard.isDown("q") then
                 player = dynamic:update(dt, obstacles, "left")
             elseif love.keyboard.isDown("e") then
+
+                 -- animation test
+                anim.currentTime = anim.currentTime + dt
+                if anim.currentTime >= anim.duration then
+                    anim.currentTime = anim.currentTime - anim.duration
+                end
+                -----------------
+                
                 player = dynamic:update(dt, obstacles, "right")
             else
                 player = dynamic:update(dt, obstacles, "none")
@@ -94,32 +121,6 @@ function love.update(dt)
         gameState = 2
     elseif t > updateRate then
         timeStamp = tostring(os.time())
-
-        -- o.x = x or 0
-        -- o.y = y or 0
-        -- o.shape = shape or "rectangle"
-        -- o.width = width or 50
-        -- o.height = height or 50
-        -- o.baseSpeed = baseSpeed or 0
-        -- o.maxSpeed = maxSpeed or 10
-        -- o.action = action or "freeFall" -- | throwUp | throwAngle | stop
-        -- o.obstacles = obstacles or {}
-        --
-        -- o.angle = 0 -- in rads
-        -- o.time = 0
-        -- o.fixX = 0
-        -- o.fixY = 0
-        -- o.throwAngleTimeMultiplier = 1
-        --
-        -- o.statusL = 0
-        -- o.statusT = 0
-        -- o.statusR = 0
-        -- o.statusB = 0
-        --
-        -- o.platform = {0, 0}
-        --
-        -- o.acc = 0
-
         local dg = string.format("%s %d %f %f %f %f %f %f %s %f %f %f %f %f %f %f %f %f", 'move', timeStamp,
             player.x,
             player.y,
@@ -177,7 +178,12 @@ function love.update(dt)
 end
 
 function love.draw()
-    dynamic:draw()
+
+    -- animation test
+    spriteNum = math.floor(anim.currentTime/anim.duration * #anim.quads) + 1
+    -----------------
+
+    dynamic:draw(spriteNum)
     dynamic2:draw()
     dynamic3:draw()
     dynamic4:draw()
@@ -222,3 +228,24 @@ function spawnObstacle(x, y, width, height)
     obstacle = Static.new(x, y, nil, width, height)
     table.insert(obstacles, obstacle)
 end
+
+-- animation test
+function newAnimation(image, width, height, duration)
+    local animation = {}
+    animation.spiteSheet = image
+    animation.quads = {}
+    animation.duration = duration or 1
+    animation.currentTime = 0
+  
+    print(image:getHeight())
+    print(image:getWidth())
+  
+    for y=0, image:getHeight()-height, height do
+        for x=0, image:getWidth()-width, width do
+            table.insert(animation.quads, love.graphics.newQuad(x, y, width, height, image:getDimensions()))
+        end
+    end
+  
+    return animation
+end
+-----------------

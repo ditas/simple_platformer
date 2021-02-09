@@ -33,8 +33,14 @@ function Dynamic.new(x, y, shape, width, height, baseSpeed, maxSpeed, angle, act
 
     o.acc = 0
 
+    o.animation = nil
+
     setmetatable(o, Dynamic)
     return o
+end
+
+function Dynamic:setAnimation(animation)
+    self.animation = animation or {}
 end
 
 function Dynamic:setUpdateData(
@@ -264,6 +270,15 @@ function checkIntersection(a, b)
     return (v1*v2<0) and (v3*v4<0)
 end
 
-function Dynamic:draw()
-    love.graphics.rectangle("line", self.x, self.y, self.width, self.height)
+function Dynamic:draw(spritenum)
+
+    if self.animation and spriteNum then
+        print("ANIMATION " .. #self.animation.quads .. " NUM " .. spriteNum)
+    end
+
+    if self.animation and spriteNum then
+        love.graphics.draw(self.animation.spiteSheet, self.animation.quads[spriteNum], self.x, self.y)
+    else
+        love.graphics.rectangle("line", self.x, self.y, self.width, self.height)
+    end
 end
