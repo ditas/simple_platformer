@@ -270,14 +270,14 @@ function checkIntersection(a, b)
     return (v1*v2<0) and (v3*v4<0)
 end
 
-function Dynamic:draw(spritenum)
-
-    if self.animation and spriteNum then
-        print("ANIMATION " .. #self.animation.quads .. " NUM " .. spriteNum)
-    end
-
-    if self.animation and spriteNum then
-        love.graphics.draw(self.animation.spiteSheet, self.animation.quads[spriteNum], self.x, self.y)
+function Dynamic:draw(isAnimate)
+    if self.animation then
+        if isAnimate then    
+            spriteNum = math.floor(self.animation.currentTime/self.animation.duration * #self.animation.quads) + 1
+            love.graphics.draw(self.animation.spiteSheet, self.animation.quads[spriteNum], self.x, self.y)
+        elseif isAnimate == false then -- should be explicit "false" otherwise there are some frames when it's nil
+            love.graphics.draw(self.animation.spiteSheet, self.animation.quads[1], self.x, self.y)
+        end
     else
         love.graphics.rectangle("line", self.x, self.y, self.width, self.height)
     end
