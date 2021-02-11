@@ -280,8 +280,8 @@ function Dynamic:detectCollision(obstacles)
             if (inter1 or inter2) 
             -- or (self.y + self.height + 7.5 > o.y and (o.x >= self.x and o.x + o.width <= self.x + self.width)) 
             or
-            (--self.y + self.height + 7.5 >= o.y 
-            --and
+            (self.y + self.height + 7.5 >= o.y 
+            and
             (o.x >= self.x and o.x + o.width <= self.x + self.width))
             then
 
