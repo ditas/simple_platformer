@@ -6,6 +6,8 @@ Dynamic.__index = Dynamic
 
 function Dynamic.new(x, y, shape, width, height, baseSpeed, maxSpeed, angle, action, obstacles)
     local o = {}
+
+    o.id = nil
     o.type = "dynamic"
 
     o.x = x or 0
@@ -29,7 +31,12 @@ function Dynamic.new(x, y, shape, width, height, baseSpeed, maxSpeed, angle, act
     o.statusR = 0
     o.statusB = 0
 
-    o.platform = {0, 0}
+    -- o.platform = {0, 0, 0, 0}
+    o.platform = {}
+    -- o.platform.x = 0
+    -- o.platform.y = 0
+    -- o.platform.width = 0
+    -- o.platform.height = 0
 
     o.acc = 0
 
@@ -37,6 +44,10 @@ function Dynamic.new(x, y, shape, width, height, baseSpeed, maxSpeed, angle, act
 
     setmetatable(o, Dynamic)
     return o
+end
+
+function Dynamic:setId(id)
+    self.id = id
 end
 
 function Dynamic:setAnimation(animation)
@@ -81,34 +92,50 @@ end
 
 function Dynamic:update(dt, obstacles, direction)
 
-    print("dt 1 "..dt)
-    print("---------ACTION: " .. self.action .. " DIR: " .. direction .. " statusB: " .. self.statusB .. " statusL: " .. self.statusL .. " statusR: " .. self.statusR)
+    -- print("dt 1 "..dt)
+    print("----" .. self.id .."-----ACTION: " .. self.action .. " DIR: " .. direction .. " statusB: " .. self.statusB .. " statusL: " .. self.statusL .. " statusR: " .. self.statusR)
 
     -- stuck prevention
     if self.statusB == 1 and self.statusL == 1 then
-        self.x = self.x + 0.5
-        self.y = self.y - 0.5
+        self.x = self.x + 1
+        self.y = self.y - 1
         self.statusL = 0
         -- self.statusB = 0
     end
 
     if self.statusB == 1 and self.statusR == 1 then
-        self.x = self.x - 0.5
-        self.y = self.y - 0.5
+        self.x = self.x - 1
+        self.y = self.y - 1
         self.statusR = 0
         -- self.statusB = 0
     end
 
-    -- print(self.y + self.height + 7.5)
-    -- print(self.platform[3])
-    if self.statusB == 1 and self.platform[3] ~= nil then
-        if self.y+self.height+7.5 >= self.platform[3] then
+    print("----" .. self.id .."-----BOTTOM Y: " .. self.y + self.height + 7.5)
+    if self.statusB == 1 and self.platform.y ~= nil then
+        print("----" .. self.id .."-----PLATFORM Y: " .. self.platform.y)
+        if self.y + self.height + 7.5 > self.platform.y then
             self.y = self.y - 0.1
         end
     end
     -------------------
 
-    if self.statusB == 1 and self.x + self.width > self.platform[1] and self.x < self.platform[2] then
+    -- if self.statusB == 1 and self.x + self.width > self.platform[1] and self.x < self.platform[2] then
+
+    if #self.platform > 0 then
+        print("----" .. self.id .."-----PLATFORM x " .. self.platform.x .. " y " .. self.platform.y .. " width " .. self.platform.width .. " height " .. self.platform.height)
+    end
+
+    if (self.statusB == 1 and 
+        ((self.x + self.width >= self.platform.x
+            and self.x + self.width <= self.platform.x + self.platform.width) 
+        or 
+        (self.x <= self.platform.x + self.platform.width 
+            and self.x >= self.platform.x)))
+        -- or
+        -- (self.y + self.height + 7.5 >= self.platform.y 
+        -- and
+        -- (self.platform.x >= self.x and self.platform.x + self.platform.width <= self.x + self.width))
+    then
         if direction == "left" and self.statusL ~= 1 then
             self.x = self.x - 100 * dt
             self.statusR = 0
@@ -116,11 +143,19 @@ function Dynamic:update(dt, obstacles, direction)
             self.x = self.x + 100 * dt
             self.statusL = 0
         end
-        self.platform = {0, 0}
+        -- self.platform = {0, 0, 0, 0}
+        self.platform.x = 0
+        self.platform.y = 0
+        self.platform.width = 0
+        self.platform.height = 0
     elseif self.statusB == 1 then
         self.statusB = 0
         self.action = "freeFall"
-        self.platform = {0, 0}
+        -- self.platform = {0, 0, 0, 0}
+        self.platform.x = 0
+        self.platform.y = 0
+        self.platform.width = 0
+        self.platform.height = 0
     end
 
     if self.action == "topBlocked" then
@@ -225,40 +260,59 @@ function Dynamic:detectCollision(obstacles)
     local bottom = {x1 = self.x - 7.5, y1 = self.y + self.height, x2 = self.x + self.width + 7.5, y2 = self.y + self.height}
 
     for i,o in ipairs(obstacles) do
-        local o_left = {x1 = o.x, y1 = o.y, x2 = o.x, y2 = o.y + o.height}
-        local o_right = {x1 = o.x + o.width, y1 = o.y, x2 = o.x + o.width, y2 = o.y + o.height}
-        local o_top = {x1 = o.x, y1 = o.y, x2 = o.x + o.width, y2 = o.y}
-        local o_bottom = {x1 = o.x, y1 = o.y + o.height, x2 = o.x + o.width, y2 = o.y + o.height}
 
-        inter1 = checkIntersection(left, o_top)
-        inter2 = checkIntersection(right, o_top)
-        inter3 = checkIntersection(left, o_bottom)
-        inter4 = checkIntersection(right, o_bottom)
-        inter5 = checkIntersection(top, o_left)
-        inter6 = checkIntersection(bottom, o_left)
-        inter7 = checkIntersection(top, o_right)
-        inter8 = checkIntersection(bottom, o_right)
+        if o.id ~= self.id then
 
-        if inter1 or inter2 then
-            self.statusB = 1
-            self.action = "stop"
-            self.platform = {o.x, o.x + o.width, o.y}
+            local o_left = {x1 = o.x, y1 = o.y, x2 = o.x, y2 = o.y + o.height}
+            local o_right = {x1 = o.x + o.width, y1 = o.y, x2 = o.x + o.width, y2 = o.y + o.height}
+            local o_top = {x1 = o.x, y1 = o.y, x2 = o.x + o.width, y2 = o.y}
+            local o_bottom = {x1 = o.x, y1 = o.y + o.height, x2 = o.x + o.width, y2 = o.y + o.height}
+
+            inter1 = checkIntersection(left, o_top)
+            inter2 = checkIntersection(right, o_top)
+            inter3 = checkIntersection(left, o_bottom)
+            inter4 = checkIntersection(right, o_bottom)
+            inter5 = checkIntersection(top, o_left)
+            inter6 = checkIntersection(bottom, o_left)
+            inter7 = checkIntersection(top, o_right)
+            inter8 = checkIntersection(bottom, o_right)
+
+            if (inter1 or inter2) 
+            -- or (self.y + self.height + 7.5 > o.y and (o.x >= self.x and o.x + o.width <= self.x + self.width)) 
+            or
+            (--self.y + self.height + 7.5 >= o.y 
+            --and
+            (o.x >= self.x and o.x + o.width <= self.x + self.width))
+            then
+
+                print("------------PL ID " .. o.id)
+
+                self.statusB = 1
+                self.action = "stop"
+                -- self.platform = {o.x, o.y, o.width, o.height} -- {o.x, o.y, plw, plh} -- {o.x, o.x + o.width, o.y}
+                self.platform.x = o.x
+                self.platform.y = o.y
+                self.platform.width = o.width
+                self.platform.height = o.height
+            end
+
+            if inter3 or inter4 then
+                self.statusT = 1
+                self.action = "topBlocked"
+            end
+
+            if (inter5 or inter6) and self.action ~= "throwUp" then
+                self.statusR = 1
+                self.action = "rightBlocked"
+            end
+
+            if (inter7 or inter8) and self.action ~= "throwUp" then
+                self.statusL = 1
+                self.action = "leftBlocked"
+            end
+
         end
 
-        if inter3 or inter4 then
-            self.statusT = 1
-            self.action = "topBlocked"
-        end
-
-        if (inter5 or inter6) and self.action ~= "throwUp" then
-            self.statusR = 1
-            self.action = "rightBlocked"
-        end
-
-        if (inter7 or inter8) and self.action ~= "throwUp" then
-            self.statusL = 1
-            self.action = "leftBlocked"
-        end
     end
 end
 
@@ -271,14 +325,23 @@ function checkIntersection(a, b)
 end
 
 function Dynamic:draw(isAnimate)
-    if self.animation then
-        if isAnimate then    
-            spriteNum = math.floor(self.animation.currentTime/self.animation.duration * #self.animation.quads) + 1
-            love.graphics.draw(self.animation.spiteSheet, self.animation.quads[spriteNum], self.x, self.y)
-        elseif isAnimate == false then -- should be explicit "false" otherwise there are some frames when it's nil
-            love.graphics.draw(self.animation.spiteSheet, self.animation.quads[1], self.x, self.y)
-        end
-    else
-        love.graphics.rectangle("line", self.x, self.y, self.width, self.height)
-    end
+    -- if self.animation then
+    --     if isAnimate then    
+    --         spriteNum = math.floor(self.animation.currentTime/self.animation.duration * #self.animation.quads) + 1
+    --         love.graphics.draw(self.animation.spiteSheet, self.animation.quads[spriteNum], self.x, self.y)
+    --     elseif isAnimate == false then -- should be explicit "false" otherwise there are some frames when it's nil
+    --         love.graphics.draw(self.animation.spiteSheet, self.animation.quads[1], self.x, self.y)
+    --     end
+    -- else
+    --     love.graphics.rectangle("line", self.x, self.y, self.width, self.height)
+    -- end
+
+    -- if self.animation and isAnimate then  
+    --     spriteNum = math.floor(self.animation.currentTime/self.animation.duration * #self.animation.quads) + 1
+    --     love.graphics.draw(self.animation.spiteSheet, self.animation.quads[spriteNum], self.x, self.y)
+    -- else
+    --     love.graphics.rectangle("line", self.x, self.y, self.width, self.height)
+    -- end
+
+    love.graphics.rectangle("line", self.x, self.y, self.width, self.height)
 end

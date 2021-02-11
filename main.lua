@@ -12,16 +12,16 @@ function love.load()
     obstacles = {}
 
     -- animation test
-    img_right = love.graphics.newImage("hero_right.png")
-    anim_right = newAnimation(img_right, 16, 18, 1)
+    img_right = love.graphics.newImage("p1_spritesheet.png")
+    anim_right = newAnimation(img_right, 73, 97, 1)
 
     img_left = love.graphics.newImage("hero_left.png")
     anim_left = newAnimation(img_left, 16, 18, 1)
     -----------------
 
     require("dynamicClass")
-    dynamic = Dynamic.new(500, 0, nil, 16, 18, nil, 10)
-    dynamic2 = Dynamic.new(400, 0, nil, 16, 18, nil, 10)
+    dynamic = Dynamic.new(500, 0, nil, 73, 97, nil, 10)
+    dynamic2 = Dynamic.new(400, 0, nil, 50, 50, nil, 10)
 
     -- animation test
     dynamic:setAnimation(anim_right)
@@ -31,6 +31,12 @@ function love.load()
     dynamic3 = Dynamic.new(300, 0, nil, nil, nil, nil, 10)
     dynamic4 = Dynamic.new(600, 0, nil, nil, nil, nil, 10)
     dynamic5 = Dynamic.new(700, 0, nil, nil, nil, nil, 10)
+
+    dynamic:setId("player")
+    dynamic2:setId("2")
+    dynamic3:setId("3")
+    dynamic4:setId("4")
+    dynamic5:setId("5")
 
     obstacles = {dynamic, dynamic2, dynamic3, dynamic4, dynamic5}
 
@@ -242,8 +248,8 @@ function newAnimation(image, width, height, duration)
     animation.duration = duration or 1
     animation.currentTime = 0
   
-    -- print(image:getHeight())
-    -- print(image:getWidth())
+    print(image:getHeight())
+    print(image:getWidth())
   
     for y=0, image:getHeight()-height, height do
         for x=0, image:getWidth()-width, width do

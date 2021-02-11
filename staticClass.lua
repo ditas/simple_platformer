@@ -3,6 +3,8 @@ Static.__index = Static
 
 function Static.new(x, y, shape, width, height)
     local o = {}
+
+    o.id = "tmp_static"
     o.type = "static"
 
     o.x = x or 0
