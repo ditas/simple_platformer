@@ -267,10 +267,18 @@ function Dynamic:detectCollision(obstacles)
 
         if o.id ~= self.id then
 
-            local o_left = {x1 = o.x, y1 = o.y, x2 = o.x, y2 = o.y + o.height}
-            local o_right = {x1 = o.x + o.width, y1 = o.y, x2 = o.x + o.width, y2 = o.y + o.height}
-            local o_top = {x1 = o.x, y1 = o.y, x2 = o.x + o.width, y2 = o.y}
-            local o_bottom = {x1 = o.x, y1 = o.y + o.height, x2 = o.x + o.width, y2 = o.y + o.height}
+            -- AABB
+            if (self.x - 7.5 < o.x + o.width and
+                self.x + self.width + 7.5 > o.x and
+                self.y - 7.5 < o.y + o.height and
+                self.y + self.height + 7.5 > o.y) 
+            then
+            -------
+
+                local o_left = {x1 = o.x, y1 = o.y, x2 = o.x, y2 = o.y + o.height}
+                local o_right = {x1 = o.x + o.width, y1 = o.y, x2 = o.x + o.width, y2 = o.y + o.height}
+                local o_top = {x1 = o.x, y1 = o.y, x2 = o.x + o.width, y2 = o.y}
+                local o_bottom = {x1 = o.x, y1 = o.y + o.height, x2 = o.x + o.width, y2 = o.y + o.height}
 
             -- if self.square <= o.square then
 
@@ -349,7 +357,7 @@ function Dynamic:detectCollision(obstacles)
             --     --     self.statusR = 1
             --     --     self.action = "rightBlocked"
             --     -- end
-            -- end
+            end
 
         end
 
