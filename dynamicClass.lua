@@ -15,6 +15,9 @@ function Dynamic.new(x, y, shape, width, height, baseSpeed, maxSpeed, angle, act
     o.shape = shape or "rectangle"
     o.width = width or 50
     o.height = height or 50
+
+    o.square = o.width * o.height
+
     o.baseSpeed = baseSpeed or 0
     o.maxSpeed = maxSpeed or 10
     o.action = action or "freeFall" -- | throwUp | throwAngle | stop
@@ -97,17 +100,21 @@ function Dynamic:update(dt, obstacles, direction)
 
     -- stuck prevention
     if self.statusB == 1 and self.statusL == 1 then
+
+print("-----------L-------------"  .. self.id .. "-------------------------- X " ..  self.x .. " Y " .. self.y)
+
         self.x = self.x + 1
         self.y = self.y - 1
         self.statusL = 0
-        -- self.statusB = 0
     end
 
     if self.statusB == 1 and self.statusR == 1 then
+
+print("-----------R-------------"  .. self.id .. "-------------------------- X " ..  self.x .. " Y " .. self.y)
+
         self.x = self.x - 1
         self.y = self.y - 1
         self.statusR = 0
-        -- self.statusB = 0
     end
 
     print("----" .. self.id .."-----BOTTOM Y: " .. self.y + self.height + 7.5)
@@ -120,6 +127,7 @@ function Dynamic:update(dt, obstacles, direction)
     -------------------
 
     -- if self.statusB == 1 and self.x + self.width > self.platform[1] and self.x < self.platform[2] then
+    -- if self.statusB == 1 and self.x + self.width > self.platform.x and self.x < self.platform.x + self.platform.width then
 
     if #self.platform > 0 then
         print("----" .. self.id .."-----PLATFORM x " .. self.platform.x .. " y " .. self.platform.y .. " width " .. self.platform.width .. " height " .. self.platform.height)
@@ -131,10 +139,6 @@ function Dynamic:update(dt, obstacles, direction)
         or 
         (self.x <= self.platform.x + self.platform.width 
             and self.x >= self.platform.x)))
-        -- or
-        -- (self.y + self.height + 7.5 >= self.platform.y 
-        -- and
-        -- (self.platform.x >= self.x and self.platform.x + self.platform.width <= self.x + self.width))
     then
         if direction == "left" and self.statusL ~= 1 then
             self.x = self.x - 100 * dt
@@ -268,48 +272,84 @@ function Dynamic:detectCollision(obstacles)
             local o_top = {x1 = o.x, y1 = o.y, x2 = o.x + o.width, y2 = o.y}
             local o_bottom = {x1 = o.x, y1 = o.y + o.height, x2 = o.x + o.width, y2 = o.y + o.height}
 
-            inter1 = checkIntersection(left, o_top)
-            inter2 = checkIntersection(right, o_top)
-            inter3 = checkIntersection(left, o_bottom)
-            inter4 = checkIntersection(right, o_bottom)
-            inter5 = checkIntersection(top, o_left)
-            inter6 = checkIntersection(bottom, o_left)
-            inter7 = checkIntersection(top, o_right)
-            inter8 = checkIntersection(bottom, o_right)
+            -- if self.square <= o.square then
 
-            if (inter1 or inter2) 
-            -- or (self.y + self.height + 7.5 > o.y and (o.x >= self.x and o.x + o.width <= self.x + self.width)) 
-            or
-            (self.y + self.height + 7.5 >= o.y 
-            and
-            (o.x >= self.x and o.x + o.width <= self.x + self.width))
-            then
+                inter1 = checkIntersection(left, o_top)
+                inter2 = checkIntersection(right, o_top)
+                inter3 = checkIntersection(left, o_bottom)
+                inter4 = checkIntersection(right, o_bottom)
+                inter5 = checkIntersection(top, o_left)
+                inter6 = checkIntersection(bottom, o_left)
+                inter7 = checkIntersection(top, o_right)
+                inter8 = checkIntersection(bottom, o_right)
 
-                print("------------PL ID " .. o.id)
+                if inter1 or inter2 then
 
-                self.statusB = 1
-                self.action = "stop"
-                -- self.platform = {o.x, o.y, o.width, o.height} -- {o.x, o.y, plw, plh} -- {o.x, o.x + o.width, o.y}
-                self.platform.x = o.x
-                self.platform.y = o.y
-                self.platform.width = o.width
-                self.platform.height = o.height
-            end
+                    print("------------PL ID " .. o.id)
 
-            if inter3 or inter4 then
-                self.statusT = 1
-                self.action = "topBlocked"
-            end
+                    self.statusB = 1
+                    self.action = "stop"
+                    -- self.platform = {o.x, o.y, o.width, o.height} -- {o.x, o.y, plw, plh} -- {o.x, o.x + o.width, o.y}
+                    self.platform.x = o.x
+                    self.platform.y = o.y
+                    self.platform.width = o.width
+                    self.platform.height = o.height
+                end
 
-            if (inter5 or inter6) and self.action ~= "throwUp" then
-                self.statusR = 1
-                self.action = "rightBlocked"
-            end
+                if inter3 or inter4 then
+                    self.statusT = 1
+                    self.action = "topBlocked"
+                end
 
-            if (inter7 or inter8) and self.action ~= "throwUp" then
-                self.statusL = 1
-                self.action = "leftBlocked"
-            end
+                if (inter5 or inter6) and self.action ~= "throwUp" then
+                    self.statusR = 1
+                    self.action = "rightBlocked"
+                end
+
+                if (inter7 or inter8) and self.action ~= "throwUp" then
+                    self.statusL = 1
+                    self.action = "leftBlocked"
+                end
+            -- else
+            --     -- inter1 = checkIntersection(o_left, top)
+            --     -- inter2 = checkIntersection(o_right, top)
+
+            --     inter3 = checkIntersection(o_left, bottom)
+            --     inter4 = checkIntersection(o_right, bottom)
+
+            --     -- inter5 = checkIntersection(o_top, left)
+            --     -- inter6 = checkIntersection(o_bottom, left)
+
+            --     -- inter7 = checkIntersection(o_top, right)
+            --     -- inter8 = checkIntersection(o_bottom, right)
+
+            --     -- if inter1 or inter2 then
+            --     --     self.statusT = 1
+            --     --     self.action = "topBlocked"
+            --     -- end
+
+            --     if inter3 or inter4 then
+            --         print("-----" .. self.id .. "-------PL ID " .. o.id)
+
+            --         self.statusB = 1
+            --         self.action = "stop"
+            --         -- self.platform = {o.x, o.y, o.width, o.height} -- {o.x, o.y, plw, plh} -- {o.x, o.x + o.width, o.y}
+            --         self.platform.x = o.x
+            --         self.platform.y = o.y
+            --         self.platform.width = o.width
+            --         self.platform.height = o.height
+            --     end
+
+            --     -- if (inter5 or inter6) and self.action ~= "throwUp" then
+            --     --     self.statusL = 1
+            --     --     self.action = "leftBlocked"
+            --     -- end
+
+            --     -- if (inter7 or inter8) and self.action ~= "throwUp" then
+            --     --     self.statusR = 1
+            --     --     self.action = "rightBlocked"
+            --     -- end
+            -- end
 
         end
 

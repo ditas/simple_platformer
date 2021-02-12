@@ -12,6 +12,7 @@ function Static.new(x, y, shape, width, height)
     o.shape = shape or "rectangle"
     o.width = width or 50
     o.height = height or 300
+    o.square = o.width * o.height
     setmetatable(o, Static)
     return o
 end
