@@ -20,7 +20,7 @@ function love.load()
     -----------------
 
     require("dynamicClass")
-    dynamic = Dynamic.new(500, 0, nil, 50, 50, nil, 10)
+    dynamic = Dynamic.new(500, 0, nil, 100, 100, nil, 10)
     dynamic2 = Dynamic.new(400, 0, nil, 50, 50, nil, 10)
 
     -- animation test

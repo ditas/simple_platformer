@@ -126,41 +126,61 @@ print("-----------R-------------"  .. self.id .. "-------------------------- X "
     end
     -------------------
 
-    -- if self.statusB == 1 and self.x + self.width > self.platform[1] and self.x < self.platform[2] then
-    -- if self.statusB == 1 and self.x + self.width > self.platform.x and self.x < self.platform.x + self.platform.width then
 
-    if #self.platform > 0 then
-        print("----" .. self.id .."-----PLATFORM x " .. self.platform.x .. " y " .. self.platform.y .. " width " .. self.platform.width .. " height " .. self.platform.height)
-    end
+    -- if #self.platform > 0 then
+    --     print("----" .. self.id .."-----PLATFORM x " .. self.platform.x .. " y " .. self.platform.y .. " width " .. self.platform.width .. " height " .. self.platform.height)
+    -- end
 
-    if (self.statusB == 1 and 
-        ((self.x + self.width >= self.platform.x
-            and self.x + self.width <= self.platform.x + self.platform.width) 
-        or 
-        (self.x <= self.platform.x + self.platform.width 
-            and self.x >= self.platform.x)))
-    then
-        if direction == "left" and self.statusL ~= 1 then
-            self.x = self.x - 100 * dt
-            self.statusR = 0
-        elseif direction == "right" and self.statusR ~= 1 then
-            self.x = self.x + 100 * dt
-            self.statusL = 0
+    if self.statusB == 1 then
+        if (self.x < self.platform.x + self.platform.width and self.x + self.width > self.platform.x) 
+            or 
+            (self.platform.x < self.x + self.width and self.platform.x + self.platform.width > self.x) 
+        then
+            if direction == "left" and self.statusL ~= 1 then
+                self.x = self.x - 100 * dt
+                self.statusR = 0
+            elseif direction == "right" and self.statusR ~= 1 then
+                self.x = self.x + 100 * dt
+                self.statusL = 0
+            end
+
+            self.platform.x = 0
+            self.platform.y = 0
+            self.platform.width = 0
+            self.platform.height = 0
+        else
+            self.statusB = 0
+            self.action = "freeFall"
+
+            self.platform.x = 0
+            self.platform.y = 0
+            self.platform.width = 0
+            self.platform.height = 0
         end
-        -- self.platform = {0, 0, 0, 0}
-        self.platform.x = 0
-        self.platform.y = 0
-        self.platform.width = 0
-        self.platform.height = 0
-    elseif self.statusB == 1 then
-        self.statusB = 0
-        self.action = "freeFall"
-        -- self.platform = {0, 0, 0, 0}
-        self.platform.x = 0
-        self.platform.y = 0
-        self.platform.width = 0
-        self.platform.height = 0
     end
+
+    -- if self.statusB == 1 and self.x + self.width > self.platform.x and self.x < self.platform.x + self.platform.width then
+    --     if direction == "left" and self.statusL ~= 1 then
+    --         self.x = self.x - 100 * dt
+    --         self.statusR = 0
+    --     elseif direction == "right" and self.statusR ~= 1 then
+    --         self.x = self.x + 100 * dt
+    --         self.statusL = 0
+    --     end
+
+    --     self.platform.x = 0
+    --     self.platform.y = 0
+    --     self.platform.width = 0
+    --     self.platform.height = 0
+    -- elseif self.statusB == 1 then
+    --     self.statusB = 0
+    --     self.action = "freeFall"
+
+    --     self.platform.x = 0
+    --     self.platform.y = 0
+    --     self.platform.width = 0
+    --     self.platform.height = 0
+    -- end
 
     if self.action == "topBlocked" then
         self.action = "freeFall"
@@ -275,88 +295,79 @@ function Dynamic:detectCollision(obstacles)
             then
             -------
 
-                local o_left = {x1 = o.x, y1 = o.y, x2 = o.x, y2 = o.y + o.height}
-                local o_right = {x1 = o.x + o.width, y1 = o.y, x2 = o.x + o.width, y2 = o.y + o.height}
-                local o_top = {x1 = o.x, y1 = o.y, x2 = o.x + o.width, y2 = o.y}
-                local o_bottom = {x1 = o.x, y1 = o.y + o.height, x2 = o.x + o.width, y2 = o.y + o.height}
+                if o.y + o.height < self.y then
+                    print(self.id .. " top")
 
-            -- if self.square <= o.square then
+                    self.statusT = 1
+                    self.action = "topBlocked"
+                elseif o.x + o.width < self.x then
+                    print(self.id .. " left")
 
-                inter1 = checkIntersection(left, o_top)
-                inter2 = checkIntersection(right, o_top)
-                inter3 = checkIntersection(left, o_bottom)
-                inter4 = checkIntersection(right, o_bottom)
-                inter5 = checkIntersection(top, o_left)
-                inter6 = checkIntersection(bottom, o_left)
-                inter7 = checkIntersection(top, o_right)
-                inter8 = checkIntersection(bottom, o_right)
+                    self.statusL = 1
+                    self.action = "leftBlocked"
+                elseif o.x > self.x + self.width then
+                    print(self.id .. " right")
 
-                if inter1 or inter2 then
-
-                    print("------------PL ID " .. o.id)
+                    self.statusR = 1
+                    self.action = "rightBlocked"
+                else
+                    print(self.id .. " bottom")
 
                     self.statusB = 1
                     self.action = "stop"
-                    -- self.platform = {o.x, o.y, o.width, o.height} -- {o.x, o.y, plw, plh} -- {o.x, o.x + o.width, o.y}
+
                     self.platform.x = o.x
                     self.platform.y = o.y
                     self.platform.width = o.width
                     self.platform.height = o.height
                 end
 
-                if inter3 or inter4 then
-                    self.statusT = 1
-                    self.action = "topBlocked"
-                end
+                -- local o_left = {x1 = o.x, y1 = o.y, x2 = o.x, y2 = o.y + o.height}
+                -- local o_right = {x1 = o.x + o.width, y1 = o.y, x2 = o.x + o.width, y2 = o.y + o.height}
+                -- local o_top = {x1 = o.x, y1 = o.y, x2 = o.x + o.width, y2 = o.y}
+                -- local o_bottom = {x1 = o.x, y1 = o.y + o.height, x2 = o.x + o.width, y2 = o.y + o.height}
 
-                if (inter5 or inter6) and self.action ~= "throwUp" then
-                    self.statusR = 1
-                    self.action = "rightBlocked"
-                end
+                -- inter1 = checkIntersection(left, o_top)
+                -- inter2 = checkIntersection(right, o_top)
+                -- inter3 = checkIntersection(left, o_bottom)
+                -- inter4 = checkIntersection(right, o_bottom)
+                -- inter5 = checkIntersection(top, o_left)
+                -- inter6 = checkIntersection(bottom, o_left)
+                -- inter7 = checkIntersection(top, o_right)
+                -- inter8 = checkIntersection(bottom, o_right)
 
-                if (inter7 or inter8) and self.action ~= "throwUp" then
-                    self.statusL = 1
-                    self.action = "leftBlocked"
-                end
-            -- else
-            --     -- inter1 = checkIntersection(o_left, top)
-            --     -- inter2 = checkIntersection(o_right, top)
+                -- if inter1 or inter2 
+                --     or 
+                --     checkIntersection(o_left, bottom) or checkIntersection(o_right, bottom) 
+                --     -- checkIntersection(bottom, o_left) or checkIntersection(bottom, o_right)
+                -- then
 
-            --     inter3 = checkIntersection(o_left, bottom)
-            --     inter4 = checkIntersection(o_right, bottom)
+                --     print("------------PL ID " .. o.id)
 
-            --     -- inter5 = checkIntersection(o_top, left)
-            --     -- inter6 = checkIntersection(o_bottom, left)
+                --     self.statusB = 1
+                --     self.action = "stop"
 
-            --     -- inter7 = checkIntersection(o_top, right)
-            --     -- inter8 = checkIntersection(o_bottom, right)
+                --     self.platform.x = o.x
+                --     self.platform.y = o.y
+                --     self.platform.width = o.width
+                --     self.platform.height = o.height
+                -- end
 
-            --     -- if inter1 or inter2 then
-            --     --     self.statusT = 1
-            --     --     self.action = "topBlocked"
-            --     -- end
+                -- if inter3 or inter4 then
+                --     self.statusT = 1
+                --     self.action = "topBlocked"
+                -- end
 
-            --     if inter3 or inter4 then
-            --         print("-----" .. self.id .. "-------PL ID " .. o.id)
+                -- if (inter5 or inter6) and self.action ~= "throwUp" then
+                --     self.statusR = 1
+                --     self.action = "rightBlocked"
+                -- end
 
-            --         self.statusB = 1
-            --         self.action = "stop"
-            --         -- self.platform = {o.x, o.y, o.width, o.height} -- {o.x, o.y, plw, plh} -- {o.x, o.x + o.width, o.y}
-            --         self.platform.x = o.x
-            --         self.platform.y = o.y
-            --         self.platform.width = o.width
-            --         self.platform.height = o.height
-            --     end
+                -- if (inter7 or inter8) and self.action ~= "throwUp" then
+                --     self.statusL = 1
+                --     self.action = "leftBlocked"
+                -- end
 
-            --     -- if (inter5 or inter6) and self.action ~= "throwUp" then
-            --     --     self.statusL = 1
-            --     --     self.action = "leftBlocked"
-            --     -- end
-
-            --     -- if (inter7 or inter8) and self.action ~= "throwUp" then
-            --     --     self.statusR = 1
-            --     --     self.action = "rightBlocked"
-            --     -- end
             end
 
         end
