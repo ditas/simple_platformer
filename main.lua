@@ -12,8 +12,8 @@ function love.load()
     obstacles = {}
 
     -- animation test
-    img_right = love.graphics.newImage("p1_spritesheet.png")
-    anim_right = newAnimation(img_right, 73, 97, 1)
+    img_right = love.graphics.newImage("hero_right.png")
+    anim_right = newAnimation(img_right, 16, 18, 1)
 
     img_left = love.graphics.newImage("hero_left.png")
     anim_left = newAnimation(img_left, 16, 18, 1)
@@ -34,16 +34,16 @@ function love.load()
 
     dynamic:setId("player")
     dynamic2:setId("2")
-    -- dynamic3:setId("3")
-    -- dynamic4:setId("4")
-    -- dynamic5:setId("5")
+    dynamic3:setId("3")
+    dynamic4:setId("4")
+    dynamic5:setId("5")
 
     obstacles = {
         dynamic, 
         dynamic2, 
-        -- dynamic3, 
-        -- dynamic4, 
-        -- dynamic5
+        dynamic3, 
+        dynamic4, 
+        dynamic5
     }
 
     spawnObstacle(300, 300, 600, 50) -- create platform
@@ -111,9 +111,9 @@ function love.update(dt)
             end
 
             dynamic2:update(dt, obstacles, "none")
-            -- dynamic3:update(dt, obstacles, "none")
-            -- dynamic4:update(dt, obstacles, "none")
-            -- dynamic5:update(dt, obstacles, "none")
+            dynamic3:update(dt, obstacles, "none")
+            dynamic4:update(dt, obstacles, "none")
+            dynamic5:update(dt, obstacles, "none")
 
             for i,o in ipairs(obstacles) do
                 if o.type == "static" then
@@ -170,8 +170,6 @@ function love.update(dt)
                 table.insert(player_update, w)
             end
 
-            -- dynamic2.x = tonumber(player_update[3])
-            -- dynamic2.y = tonumber(player_update[4])
             dynamic2:setUpdateData(
                 player_update[3],
                 player_update[4],
@@ -200,9 +198,9 @@ function love.draw()
 
     dynamic:draw(true)
     dynamic2:draw()
-    -- dynamic3:draw()
-    -- dynamic4:draw()
-    -- dynamic5:draw()
+    dynamic3:draw()
+    dynamic4:draw()
+    dynamic5:draw()
 
     for i,o in ipairs(obstacles) do
         o:draw()
