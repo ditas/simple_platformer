@@ -68,7 +68,12 @@ function Dynamic:setUpdateData(
     statusL,
     statusT,
     statusR,
-    statusB
+    statusB,
+
+    platform_x,
+    platform_y,
+    platform_width,
+    platform_height
 )
     self.x = tonumber(x)
     self.y = tonumber(y)
@@ -86,11 +91,16 @@ function Dynamic:setUpdateData(
     self.statusT = tonumber(statusT)
     self.statusR = tonumber(statusR)
     self.statusB = tonumber(statusB)
+
+    self.platform.x = tonumber(platform_x)
+    self.platform.y = tonumber(platform_y)
+    self.platform.width = tonumber(platform_width)
+    self.platform.height = tonumber(platform_height)
 end
 
 function Dynamic:update(dt, obstacles, direction)
 
-    print("----" .. self.id .."-----ACTION: " .. self.action .. " DIR: " .. direction .. " statusB: " .. self.statusB .. " statusL: " .. self.statusL .. " statusR: " .. self.statusR)
+    -- print("----" .. self.id .."-----ACTION: " .. self.action .. " DIR: " .. direction .. " statusB: " .. self.statusB .. " statusL: " .. self.statusL .. " statusR: " .. self.statusR)
 
     -- stuck prevention
     if self.statusB == 1 and self.statusL == 1 then
@@ -105,9 +115,8 @@ function Dynamic:update(dt, obstacles, direction)
         self.statusR = 0
     end
 
-    if self.statusB == 1 
-        -- and self.action == "stop"
-        and self.platform.y ~= nil 
+    if self.statusB == 1
+        and self.platform.y ~= nil
     then
         if self.y + self.height + 7.5 > self.platform.y then
             self.y = self.y - 0.1
@@ -115,21 +124,11 @@ function Dynamic:update(dt, obstacles, direction)
     end
     -------------------
 
-    if self.statusB == 1 
-        -- and self.action == "stop"
-    then
-        -- if (self.x < self.platform.x + self.platform.width and self.x + self.width > self.platform.x) 
-        --     or 
-        --     (self.platform.x < self.x + self.width and self.platform.x + self.platform.width > self.x) 
-        -- then
-        if (self.x + 7.5 < self.platform.x + self.platform.width and self.x + self.width - 7.5 > self.platform.x) 
-            or 
-            (self.platform.x + 7.5 < self.x + self.width and self.platform.x + self.platform.width - 7.5 > self.x) 
+    if self.statusB == 1 then
+        if (self.x + 7.5 < self.platform.x + self.platform.width and self.x + self.width - 7.5 > self.platform.x)
+            or
+            (self.platform.x + 7.5 < self.x + self.width and self.platform.x + self.platform.width - 7.5 > self.x)
         then
-        -- if (self.x - 7.5 < self.platform.x + self.platform.width and self.x + self.width + 7.5 > self.platform.x) 
-        --     or 
-        --     (self.platform.x - 7.5 < self.x + self.width and self.platform.x + self.platform.width + 7.5 > self.x) 
-        -- then
             if direction == "left" and self.statusL ~= 1 then
                 self.x = self.x - 100 * dt
                 self.statusR = 0
@@ -137,20 +136,14 @@ function Dynamic:update(dt, obstacles, direction)
                 self.x = self.x + 100 * dt
                 self.statusL = 0
             end
-
-            self.platform.x = 0
-            self.platform.y = 0
-            self.platform.width = 0
-            self.platform.height = 0
         else
             self.statusB = 0
             self.action = "freeFall"
-
-            self.platform.x = 0
-            self.platform.y = 0
-            self.platform.width = 0
-            self.platform.height = 0
         end
+        self.platform.x = 0
+        self.platform.y = 0
+        self.platform.width = 0
+        self.platform.height = 0
     end
 
     if self.action == "topBlocked" then
@@ -163,7 +156,7 @@ function Dynamic:update(dt, obstacles, direction)
             end
         end
     end
-    -- elseif self.action == "rightBlocked" or self.action == "leftBlocked" then
+
     if self.action == "rightBlocked" or self.action == "leftBlocked" then
         if self.statusB == 1 then
             self.action = "stop"
@@ -174,7 +167,7 @@ function Dynamic:update(dt, obstacles, direction)
             end
         end
     end
-    -- elseif self.action == "stop" then
+
     if self.action == "stop" then
         self.baseSpeed = 0
     end
@@ -210,7 +203,7 @@ function Dynamic:freeFallDelta(t)
 end
 
 function Dynamic:throwUpDelta(t)
-    print(t)
+    -- print(t)
     if self.baseSpeed > 0 then
         speed = self.baseSpeed - g*t
         self.y = self.y - speed
@@ -250,7 +243,7 @@ function Dynamic:applyAngleMovement(v, alpha, throwAngleTimeMultiplier)
     self.fixX = self.x
     self.fixY = self.y
     self.angle = alpha*math.pi/180
-    self.baseSpeed = v  
+    self.baseSpeed = v
     self.action = "throwAngle"
     self.time = 0
     self.throwAngleTimeMultiplier = throwAngleTimeMultiplier or 10
@@ -266,27 +259,27 @@ function Dynamic:detectCollision(obstacles)
             if (self.x - 7.5 < o.x + o.width and
                 self.x + self.width + 7.5 > o.x and
                 self.y - 7.5 < o.y + o.height and
-                self.y + self.height + 7.5 > o.y) 
+                self.y + self.height + 7.5 > o.y)
             then
             -------
 
                 if o.y + o.height <= self.y + 7.5 then
-                    print(self.id .. " top")
+                    -- print(self.id .. " top")
 
                     self.statusT = 1
                     self.action = "topBlocked"
                 elseif o.x + o.width <= self.x + 7.5 then
-                    print(self.id .. " left")
+                    -- print(self.id .. " left")
 
                     self.statusL = 1
                     self.action = "leftBlocked"
                 elseif o.x >= self.x + self.width - 7.5 then
-                    print(self.id .. " right")
+                    -- print(self.id .. " right")
 
                     self.statusR = 1
                     self.action = "rightBlocked"
                 elseif self.y + self.height - 7.5 < o.y then
-                    print(self.id .. " bottom")
+                    -- print(self.id .. " bottom")
 
                     self.statusB = 1
                     self.action = "stop"
@@ -295,36 +288,25 @@ function Dynamic:detectCollision(obstacles)
                     self.platform.y = o.y
                     self.platform.width = o.width
                     self.platform.height = o.height
-                else
-                    -- self.statusB = 1
-                    -- self.action = "stop"
-
-                    if o.y + o.height <= self.y + 7.5 then
-                        print(self.id .. " top")
-    
-                        self.statusT = 1
-                        self.action = "topBlocked"
-                    elseif o.x + o.width <= self.x + 7.5 then
-                        print(self.id .. " left")
-    
-                        self.statusL = 1
-                        self.action = "leftBlocked"
-                    elseif o.x >= self.x + self.width - 7.5 then
-                        print(self.id .. " right")
-    
-                        self.statusR = 1
-                        self.action = "rightBlocked"
-                    elseif self.y + self.height - 7.5 < o.y then
-                        print(self.id .. " bottom")
-    
-                        self.statusB = 1
-                        self.action = "stop"
-    
-                        self.platform.x = o.x
-                        self.platform.y = o.y
-                        self.platform.width = o.width
-                        self.platform.height = o.height
-                    end
+                -- else
+                --     if o.y + o.height <= self.y + 7.5 then
+                --         self.statusT = 1
+                --         self.action = "topBlocked"
+                --     elseif o.x + o.width <= self.x + 7.5 then
+                --         self.statusL = 1
+                --         self.action = "leftBlocked"
+                --     elseif o.x >= self.x + self.width - 7.5 then
+                --         self.statusR = 1
+                --         self.action = "rightBlocked"
+                --     elseif self.y + self.height - 7.5 < o.y then
+                --         self.statusB = 1
+                --         self.action = "stop"
+                --
+                --         self.platform.x = o.x
+                --         self.platform.y = o.y
+                --         self.platform.width = o.width
+                --         self.platform.height = o.height
+                --     end
                 end
 
             end
@@ -336,7 +318,7 @@ end
 
 function Dynamic:draw(isAnimate)
     if self.animation then
-        if isAnimate then    
+        if isAnimate then
             spriteNum = math.floor(self.animation.currentTime/self.animation.duration * #self.animation.quads) + 1
             love.graphics.draw(self.animation.spiteSheet, self.animation.quads[spriteNum], self.x, self.y)
         elseif isAnimate == false then -- should be explicit "false" otherwise there are some frames when it's nil
