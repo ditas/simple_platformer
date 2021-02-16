@@ -11,38 +11,40 @@ function love.load()
     require("staticClass")
     obstacles = {}
 
+    require("dynamicClass")
+    dynamic = Dynamic.new("player", 500, 0, nil, 30, 18, nil, 10)
+    dynamic2 = Dynamic.new(2, 400, 0, nil, 50, 50, nil, 10)
+    dynamic3 = Dynamic.new(3, 300, 0, nil, nil, nil, nil, 10)
+    dynamic4 = Dynamic.new(4, 600, 0, nil, nil, nil, nil, 10)
+    dynamic5 = Dynamic.new(5, 700, 0, nil, nil, nil, nil, 10)
+
     -- animation test
+    -- img_right = love.graphics.newImage("hero_right.png")
+    -- anim_right = newAnimation(img_right, 16, 18, 1)
+    -- img_left = love.graphics.newImage("hero_left.png")
+    -- anim_left = newAnimation(img_left, 16, 18, 1)
+    --
+    -- img_right_2 = love.graphics.newImage("hero_right.png")
+    -- anim_right_2 = newAnimation(img_right_2, 16, 18, 1)
+    -- img_left_2 = love.graphics.newImage("hero_left.png")
+    -- anim_left_2 = newAnimation(img_left_2, 16, 18, 1)
+
     img_right = love.graphics.newImage("hero_right.png")
-    anim_right = newAnimation(img_right, 16, 18, 1)
+    dynamic:addAnimation(img_right, 16, 18, 1)
+    -- dynamic2:addAnimation(img_right, 16, 18, 1)
 
     img_left = love.graphics.newImage("hero_left.png")
-    anim_left = newAnimation(img_left, 16, 18, 1)
+    dynamic:addAnimation(img_left, 16, 18, 1)
+    -- dynamic2:addAnimation(img_left, 16, 18, 1)
+
+    dynamic:setAnimation(1)
     -----------------
-
-    require("dynamicClass")
-    dynamic = Dynamic.new(500, 0, nil, 30, 30, nil, 10)
-    dynamic2 = Dynamic.new(400, 0, nil, 50, 50, nil, 10)
-
-    -- animation test
-    dynamic:setAnimation(anim_right)
-    -- dynamic2:setAnimation(anim_right) -- TODO: WTF!!! why it's moving
-    -----------------
-    
-    dynamic3 = Dynamic.new(300, 0, nil, nil, nil, nil, 10)
-    dynamic4 = Dynamic.new(600, 0, nil, nil, nil, nil, 10)
-    dynamic5 = Dynamic.new(700, 0, nil, nil, nil, nil, 10)
-
-    dynamic:setId("player")
-    dynamic2:setId("2")
-    dynamic3:setId("3")
-    dynamic4:setId("4")
-    dynamic5:setId("5")
 
     obstacles = {
-        dynamic, 
-        dynamic2, 
-        dynamic3, 
-        dynamic4, 
+        dynamic,
+        dynamic2,
+        dynamic3,
+        dynamic4,
         dynamic5
     }
 
@@ -85,24 +87,38 @@ function love.update(dt)
             if love.keyboard.isDown("q") then
 
                 -- animation test
-                dynamic:setAnimation(anim_left)
-
-                anim_left.currentTime = anim_left.currentTime + dt
-                if anim_left.currentTime >= anim_left.duration then
-                    anim_left.currentTime = anim_left.currentTime - anim_left.duration
-                end
+                -- dynamic:setAnimation(anim_left)
+                --
+                -- anim_left.currentTime = anim_left.currentTime + dt
+                -- if anim_left.currentTime >= anim_left.duration then
+                --     anim_left.currentTime = anim_left.currentTime - anim_left.duration
+                -- end
+                --
+                -- dynamic2:setAnimation(anim_left_2)
+                --
+                -- anim_left_2.currentTime = anim_left_2.currentTime + dt
+                -- if anim_left_2.currentTime >= anim_left_2.duration then
+                --     anim_left_2.currentTime = anim_left_2.currentTime - anim_left_2.duration
+                -- end
                 -----------------
 
                 player = dynamic:update(dt, obstacles, "left")
             elseif love.keyboard.isDown("e") then
 
                 -- animation test
-                dynamic:setAnimation(anim_right)
-    
-                anim_right.currentTime = anim_right.currentTime + dt
-                if anim_right.currentTime >= anim_right.duration then
-                    anim_right.currentTime = anim_right.currentTime - anim_right.duration
-                end
+                -- dynamic:setAnimation(anim_right)
+                --
+                -- anim_right.currentTime = anim_right.currentTime + dt
+                -- if anim_right.currentTime >= anim_right.duration then
+                --     anim_right.currentTime = anim_right.currentTime - anim_right.duration
+                -- end
+                --
+                -- dynamic2:setAnimation(anim_right_2)
+                --
+                -- anim_right_2.currentTime = anim_right_2.currentTime + dt
+                -- if anim_right_2.currentTime >= anim_right_2.duration then
+                --     anim_right_2.currentTime = anim_right_2.currentTime - anim_right_2.duration
+                -- end
                 -----------------
 
                 player = dynamic:update(dt, obstacles, "right")
@@ -158,6 +174,7 @@ function love.update(dt)
             player.statusR,
             player.statusB
         )
+        dg = dg .. platofrm_to_dg(player.platform)
         client:send(dg)
         t = t - updateRate
     else
@@ -187,17 +204,34 @@ function love.update(dt)
                 player_update[16],
                 player_update[17],
                 player_update[18],
-                player_update[19]
+                player_update[19],
+
+                player_update[20],
+                player_update[21],
+                player_update[22],
+                player_update[23]
             )
         end
     end
     ---------------
 end
 
+function platofrm_to_dg(platform)
+    local string = ""
+    if platform.x ~= nil and platform.y ~= nil and platform.width ~= nil and platform.height ~= nil then
+        string = string .. string.format(" %f", platform.x)
+        string = string .. string.format(" %f", platform.y)
+        string = string .. string.format(" %f", platform.width)
+        string = string .. string.format(" %f", platform.height)
+    end
+    print("--------------------------------------------------------------------------------STRING " .. string)
+    return string
+end
+
 function love.draw()
 
     dynamic:draw(true)
-    dynamic2:draw()
+    dynamic2:draw(true)
     dynamic3:draw()
     dynamic4:draw()
     dynamic5:draw()
@@ -215,12 +249,12 @@ function love.keypressed(key)
         -- dynamic2:throwUp(5)
     end
     if key == "left" then
-        dynamic:setAnimation(anim_left)
+        -- dynamic:setAnimation(anim_left)
         dynamic:throwAngle(50, 135)
         -- dynamic2:throwAngle(50, 135)
     end
     if key == "right" then
-        dynamic:setAnimation(anim_right)
+        -- dynamic:setAnimation(anim_right)
         dynamic:throwAngle(50, 45)
         -- dynamic2:throwAngle(50, 45)
     end
@@ -251,16 +285,16 @@ function newAnimation(image, width, height, duration)
     animation.quads = {}
     animation.duration = duration or 1
     animation.currentTime = 0
-  
+
     print(image:getHeight())
     print(image:getWidth())
-  
+
     for y=0, image:getHeight()-height, height do
         for x=0, image:getWidth()-width, width do
             table.insert(animation.quads, love.graphics.newQuad(x, y, width, height, image:getDimensions()))
         end
     end
-  
+
     return animation
 end
 -----------------

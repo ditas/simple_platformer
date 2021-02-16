@@ -4,10 +4,10 @@ local tick = 1/60
 Dynamic = {}
 Dynamic.__index = Dynamic
 
-function Dynamic.new(x, y, shape, width, height, baseSpeed, maxSpeed, angle, action, obstacles)
+function Dynamic.new(id, x, y, shape, width, height, baseSpeed, maxSpeed, angle, action, obstacles)
     local o = {}
 
-    o.id = nil
+    o.id = id or nil
     o.type = "dynamic"
 
     o.x = x or 0
@@ -39,17 +39,35 @@ function Dynamic.new(x, y, shape, width, height, baseSpeed, maxSpeed, angle, act
     o.acc = 0
 
     o.animation = nil
+    o.animations = {}
 
     setmetatable(o, Dynamic)
     return o
 end
 
-function Dynamic:setId(id)
-    self.id = id
-end
+-- function Dynamic:setId(id)
+--     self.id = id
+-- end
 
-function Dynamic:setAnimation(animation)
-    self.animation = animation or {}
+function Dynamic:addAnimation(image, width, height, duration)
+    local animation = {}
+    animation.spiteSheet = image
+    animation.quads = {}
+    animation.duration = duration or 1
+    animation.currentTime = 0
+
+    for y=0, image:getHeight()-height, height do
+        for x=0, image:getWidth()-width, width do
+            table.insert(animation.quads, love.graphics.newQuad(x, y, width, height, image:getDimensions()))
+        end
+    end
+
+    print("addAnimation PLATFORM " .. self.id)
+    print(self.platform)
+    print("addAnimation ANIMATIONS " .. self.id)
+    print(self.animations)
+
+    table.insert(self.animations, animation)
 end
 
 function Dynamic:setUpdateData(
@@ -132,9 +150,11 @@ function Dynamic:update(dt, obstacles, direction)
             if direction == "left" and self.statusL ~= 1 then
                 self.x = self.x - 100 * dt
                 self.statusR = 0
+                Dynamic.updateAnimation(self, direction, dt)
             elseif direction == "right" and self.statusR ~= 1 then
                 self.x = self.x + 100 * dt
                 self.statusL = 0
+                Dynamic.updateAnimation(self, direction, dt)
             end
         else
             self.statusB = 0
@@ -189,6 +209,38 @@ function Dynamic:update(dt, obstacles, direction)
     return self
 end
 
+function Dynamic:updateAnimation(direction, dt)
+
+    print("updateAnimation PLATFORM " .. self.id)
+    print(self.platform)
+    print("updateAnimation ANIMATIONS " .. self.id)
+    print(self.animations)
+
+    if self.animations then
+        if direction == "right" and #self.animations > 0 then
+            self.animation = self.animations[1]
+        elseif direction == "left" and #self.animations > 0 then
+            self.animation = self.animations[2]
+        elseif #self.animations > 0 then
+            self.animation = self.animations[1]
+        end
+
+        if self.animation and dt then
+            self.animation.currentTime = self.animation.currentTime + dt
+            if self.animation.currentTime >= self.animation.duration then
+                self.animation.currentTime = self.animation.currentTime - self.animation.duration
+            end
+        end
+    end
+
+    print("updateAnimation ANIMATION_ " .. self.id)
+    print(self.animation)
+end
+
+function Dynamic:setAnimation(index)
+    self.animation = self.animations[index]
+end
+
 function Dynamic:freeFallDelta(t)
     if self.baseSpeed < self.maxSpeed then
         speed = self.baseSpeed + g*t
@@ -232,9 +284,11 @@ function Dynamic:throwAngle(v, alpha, throwAngleTimeMultiplier)
         if alpha < 90 and self.statusR ~= 1 and self.action ~= "rightBlocked" then
             self:applyAngleMovement(v, alpha, throwAngleTimeMultiplier)
             self.statusL = 0
+            Dynamic.updateAnimation(self, "right")
         elseif alpha > 90 and self.statusL ~= 1 and self.action ~= "leftBlocked" then
             self:applyAngleMovement(v, alpha, throwAngleTimeMultiplier)
             self.statusR = 0
+            Dynamic.updateAnimation(self, "left")
         end
     end
 end
@@ -288,25 +342,6 @@ function Dynamic:detectCollision(obstacles)
                     self.platform.y = o.y
                     self.platform.width = o.width
                     self.platform.height = o.height
-                -- else
-                --     if o.y + o.height <= self.y + 7.5 then
-                --         self.statusT = 1
-                --         self.action = "topBlocked"
-                --     elseif o.x + o.width <= self.x + 7.5 then
-                --         self.statusL = 1
-                --         self.action = "leftBlocked"
-                --     elseif o.x >= self.x + self.width - 7.5 then
-                --         self.statusR = 1
-                --         self.action = "rightBlocked"
-                --     elseif self.y + self.height - 7.5 < o.y then
-                --         self.statusB = 1
-                --         self.action = "stop"
-                --
-                --         self.platform.x = o.x
-                --         self.platform.y = o.y
-                --         self.platform.width = o.width
-                --         self.platform.height = o.height
-                --     end
                 end
 
             end
