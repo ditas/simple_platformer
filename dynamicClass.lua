@@ -283,6 +283,15 @@ function Dynamic:throwUp(v)
 end
 
 function Dynamic:throwAngleDelta(t)
+    local angleDeg = self.angle * 180 / math.pi
+    if angleDeg < 90 then
+        self.direction = "right"
+        Dynamic.updateAnimation(self, nil, "right")
+    elseif angleDeg > 90 then
+        self.direction = "left"
+        Dynamic.updateAnimation(self, nil, "left")
+    end
+
     self.time = self.time + t*self.throwAngleTimeMultiplier
     local speedX = self.baseSpeed*math.cos(self.angle)*self.time
     local speedY = (self.baseSpeed*math.sin(self.angle)*self.time - (g*self.time^2)/2)
@@ -296,12 +305,12 @@ function Dynamic:throwAngle(v, alpha, throwAngleTimeMultiplier)
             self:applyAngleMovement(v, alpha, throwAngleTimeMultiplier)
             self.statusL = 0
             -- self.direction = "right"
-            Dynamic.updateAnimation(self, nil, "right")
+            -- Dynamic.updateAnimation(self, nil, "right")
         elseif alpha > 90 and self.statusL ~= 1 and self.action ~= "leftBlocked" then
             self:applyAngleMovement(v, alpha, throwAngleTimeMultiplier)
             self.statusR = 0
             -- self.direction = "left"
-            Dynamic.updateAnimation(self, nil, "left")
+            -- Dynamic.updateAnimation(self, nil, "left")
         end
     end
 end
