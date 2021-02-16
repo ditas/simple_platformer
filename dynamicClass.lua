@@ -46,10 +46,6 @@ function Dynamic.new(id, x, y, shape, width, height, baseSpeed, maxSpeed, angle,
     return o
 end
 
--- function Dynamic:setId(id)
---     self.id = id
--- end
-
 function Dynamic:addAnimation(image, width, height, duration)
     local animation = {}
     animation.spiteSheet = image
@@ -62,11 +58,6 @@ function Dynamic:addAnimation(image, width, height, duration)
             table.insert(animation.quads, love.graphics.newQuad(x, y, width, height, image:getDimensions()))
         end
     end
-
-    print("addAnimation PLATFORM " .. self.id)
-    print(self.platform)
-    print("addAnimation ANIMATIONS " .. self.id)
-    print(self.animations)
 
     table.insert(self.animations, animation)
 end
@@ -216,17 +207,7 @@ function Dynamic:update(dt, obstacles, direction)
     return self
 end
 
-function Dynamic:updateAnimation(dt, direction)
-
-    if direction ~= nil then
-        self.direction = direction
-    end
-
-    print("updateAnimation PLATFORM " .. self.id)
-    print(self.platform)
-    print("updateAnimation ANIMATIONS " .. self.id)
-    print(self.animations)
-
+function Dynamic:updateAnimation(dt)
     if self.animations then
         if self.direction == "right" and #self.animations > 0 then
             self.animation = self.animations[1]
@@ -243,9 +224,6 @@ function Dynamic:updateAnimation(dt, direction)
             end
         end
     end
-
-    print("updateAnimation ANIMATION_ " .. self.id)
-    print(self.animation)
 end
 
 function Dynamic:setAnimation(index)
@@ -286,10 +264,10 @@ function Dynamic:throwAngleDelta(t)
     local angleDeg = self.angle * 180 / math.pi
     if angleDeg < 90 then
         self.direction = "right"
-        Dynamic.updateAnimation(self, nil, "right")
+        Dynamic.updateAnimation(self)
     elseif angleDeg > 90 then
         self.direction = "left"
-        Dynamic.updateAnimation(self, nil, "left")
+        Dynamic.updateAnimation(self)
     end
 
     self.time = self.time + t*self.throwAngleTimeMultiplier
@@ -304,13 +282,9 @@ function Dynamic:throwAngle(v, alpha, throwAngleTimeMultiplier)
         if alpha < 90 and self.statusR ~= 1 and self.action ~= "rightBlocked" then
             self:applyAngleMovement(v, alpha, throwAngleTimeMultiplier)
             self.statusL = 0
-            -- self.direction = "right"
-            -- Dynamic.updateAnimation(self, nil, "right")
         elseif alpha > 90 and self.statusL ~= 1 and self.action ~= "leftBlocked" then
             self:applyAngleMovement(v, alpha, throwAngleTimeMultiplier)
             self.statusR = 0
-            -- self.direction = "left"
-            -- Dynamic.updateAnimation(self, nil, "left")
         end
     end
 end
@@ -384,6 +358,6 @@ function Dynamic:draw(isAnimate)
     else
         love.graphics.rectangle("line", self.x, self.y, self.width, self.height)
     end
-
+    -- debug
     love.graphics.rectangle("line", self.x, self.y, self.width, self.height)
 end
