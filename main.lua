@@ -13,7 +13,7 @@ function love.load()
 
     require("dynamicClass")
     dynamic = Dynamic.new("player", 500, 0, nil, 30, 18, nil, 10)
-    dynamic2 = Dynamic.new(2, 400, 0, nil, 50, 50, nil, 10)
+    dynamic2 = Dynamic.new(2, 400, 0, nil, 30, 18, nil, 10)
     dynamic3 = Dynamic.new(3, 300, 0, nil, nil, nil, nil, 10)
     dynamic4 = Dynamic.new(4, 600, 0, nil, nil, nil, nil, 10)
     dynamic5 = Dynamic.new(5, 700, 0, nil, nil, nil, nil, 10)
@@ -31,13 +31,14 @@ function love.load()
 
     img_right = love.graphics.newImage("hero_right.png")
     dynamic:addAnimation(img_right, 16, 18, 1)
-    -- dynamic2:addAnimation(img_right, 16, 18, 1)
+    dynamic2:addAnimation(img_right, 16, 18, 1)
 
     img_left = love.graphics.newImage("hero_left.png")
     dynamic:addAnimation(img_left, 16, 18, 1)
-    -- dynamic2:addAnimation(img_left, 16, 18, 1)
+    dynamic2:addAnimation(img_left, 16, 18, 1)
 
     dynamic:setAnimation(1)
+    dynamic2:setAnimation(1)
     -----------------
 
     obstacles = {
@@ -277,24 +278,3 @@ function spawnObstacle(x, y, width, height)
     obstacle = Static.new(x, y, nil, width, height)
     table.insert(obstacles, obstacle)
 end
-
--- animation test
-function newAnimation(image, width, height, duration)
-    local animation = {}
-    animation.spiteSheet = image
-    animation.quads = {}
-    animation.duration = duration or 1
-    animation.currentTime = 0
-
-    print(image:getHeight())
-    print(image:getWidth())
-
-    for y=0, image:getHeight()-height, height do
-        for x=0, image:getWidth()-width, width do
-            table.insert(animation.quads, love.graphics.newQuad(x, y, width, height, image:getDimensions()))
-        end
-    end
-
-    return animation
-end
------------------
