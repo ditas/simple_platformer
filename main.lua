@@ -124,13 +124,16 @@ function love.update(dt)
 
                 player = dynamic:update(dt, obstacles, "right")
             else
-                player = dynamic:update(dt, obstacles, "none")
+                player = dynamic:update(dt, obstacles, "none") -- have to clear previous with NON nil value
             end
-
-            dynamic2:update(dt, obstacles, "none")
-            dynamic3:update(dt, obstacles, "none")
-            dynamic4:update(dt, obstacles, "none")
-            dynamic5:update(dt, obstacles, "none")
+            -- dynamic2:update(dt, obstacles, "none")
+            -- dynamic3:update(dt, obstacles, "none")
+            -- dynamic4:update(dt, obstacles, "none")
+            -- dynamic5:update(dt, obstacles, "none")
+            dynamic2:update(dt, obstacles)
+            dynamic3:update(dt, obstacles)
+            dynamic4:update(dt, obstacles)
+            dynamic5:update(dt, obstacles)
 
             for i,o in ipairs(obstacles) do
                 if o.type == "static" then
@@ -157,7 +160,7 @@ function love.update(dt)
         gameState = 2
     elseif t > updateRate then
         timeStamp = tostring(os.time())
-        local dg = string.format("%s %d %f %f %f %f %f %f %s %f %f %f %f %f %f %f %f %f", 'move', timeStamp,
+        local dg = string.format("%s %d %f %f %f %f %f %f %s %f %f %f %f %f %f %f %f %f %s", 'move', timeStamp,
             player.x,
             player.y,
             player.width,
@@ -173,7 +176,8 @@ function love.update(dt)
             player.statusL,
             player.statusT,
             player.statusR,
-            player.statusB
+            player.statusB,
+            player.direction
         )
         dg = dg .. platofrm_to_dg(player.platform)
         client:send(dg)
@@ -206,11 +210,12 @@ function love.update(dt)
                 player_update[17],
                 player_update[18],
                 player_update[19],
-
                 player_update[20],
+
                 player_update[21],
                 player_update[22],
-                player_update[23]
+                player_update[23],
+                player_update[24]
             )
         end
     end

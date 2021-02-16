@@ -40,6 +40,7 @@ function Dynamic.new(id, x, y, shape, width, height, baseSpeed, maxSpeed, angle,
 
     o.animation = nil
     o.animations = {}
+    o.direction = nil
 
     setmetatable(o, Dynamic)
     return o
@@ -87,6 +88,7 @@ function Dynamic:setUpdateData(
     statusT,
     statusR,
     statusB,
+    direction,
 
     platform_x,
     platform_y,
@@ -109,6 +111,7 @@ function Dynamic:setUpdateData(
     self.statusT = tonumber(statusT)
     self.statusR = tonumber(statusR)
     self.statusB = tonumber(statusB)
+    self.direction = direction
 
     self.platform.x = tonumber(platform_x)
     self.platform.y = tonumber(platform_y)
@@ -117,6 +120,10 @@ function Dynamic:setUpdateData(
 end
 
 function Dynamic:update(dt, obstacles, direction)
+
+    if direction ~= nil then
+        self.direction = direction
+    end
 
     -- print("----" .. self.id .."-----ACTION: " .. self.action .. " DIR: " .. direction .. " statusB: " .. self.statusB .. " statusL: " .. self.statusL .. " statusR: " .. self.statusR)
 
@@ -147,14 +154,14 @@ function Dynamic:update(dt, obstacles, direction)
             or
             (self.platform.x + 7.5 < self.x + self.width and self.platform.x + self.platform.width - 7.5 > self.x)
         then
-            if direction == "left" and self.statusL ~= 1 then
+            if self.direction == "left" and self.statusL ~= 1 then
                 self.x = self.x - 100 * dt
                 self.statusR = 0
-                Dynamic.updateAnimation(self, direction, dt)
-            elseif direction == "right" and self.statusR ~= 1 then
+                Dynamic.updateAnimation(self, dt)
+            elseif self.direction == "right" and self.statusR ~= 1 then
                 self.x = self.x + 100 * dt
                 self.statusL = 0
-                Dynamic.updateAnimation(self, direction, dt)
+                Dynamic.updateAnimation(self, dt)
             end
         else
             self.statusB = 0
@@ -209,7 +216,11 @@ function Dynamic:update(dt, obstacles, direction)
     return self
 end
 
-function Dynamic:updateAnimation(direction, dt)
+function Dynamic:updateAnimation(dt, direction)
+
+    if direction ~= nil then
+        self.direction = direction
+    end
 
     print("updateAnimation PLATFORM " .. self.id)
     print(self.platform)
@@ -217,9 +228,9 @@ function Dynamic:updateAnimation(direction, dt)
     print(self.animations)
 
     if self.animations then
-        if direction == "right" and #self.animations > 0 then
+        if self.direction == "right" and #self.animations > 0 then
             self.animation = self.animations[1]
-        elseif direction == "left" and #self.animations > 0 then
+        elseif self.direction == "left" and #self.animations > 0 then
             self.animation = self.animations[2]
         elseif #self.animations > 0 then
             self.animation = self.animations[1]
@@ -284,11 +295,13 @@ function Dynamic:throwAngle(v, alpha, throwAngleTimeMultiplier)
         if alpha < 90 and self.statusR ~= 1 and self.action ~= "rightBlocked" then
             self:applyAngleMovement(v, alpha, throwAngleTimeMultiplier)
             self.statusL = 0
-            Dynamic.updateAnimation(self, "right")
+            -- self.direction = "right"
+            Dynamic.updateAnimation(self, nil, "right")
         elseif alpha > 90 and self.statusL ~= 1 and self.action ~= "leftBlocked" then
             self:applyAngleMovement(v, alpha, throwAngleTimeMultiplier)
             self.statusR = 0
-            Dynamic.updateAnimation(self, "left")
+            -- self.direction = "left"
+            Dynamic.updateAnimation(self, nil, "left")
         end
     end
 end
