@@ -29,7 +29,7 @@ function Animation:addAnimation(image, width, height, duration)
     table.insert(self.animations, animation)
 end
 
--- function Animation:updateAnimation(self, dt)
+-- function Animation:updateAnimation(self, dt) -- this works too, but it's not obvious to use explicit self with ":" function call
 function Animation.updateAnimation(self, dt)
 
     print("----------2-----------CALLBACK " .. dt)
@@ -64,19 +64,16 @@ function Animation:setAnimation(index)
 end
 
 function Animation:update(dt, obstacles, direction)
-    print("----------0-----------PRE CALLBACK " .. dt)
+
+    print("----------1-----------PRE CALLBACK " .. dt)
     callbacks = {}
-    left = function(s, t)
-        -- Animation.updateAnimation(self, dt)
-
-        print("----------1-----------CALLBACK " .. t)
-
-        -- Animation:updateAnimation(s, t)
+    directionChangeCallback = function(s, t)
         Animation.updateAnimation(s, t)
     end
-    callbacks["left"] = left
+    callbacks["left"] = directionChangeCallback
+    callbacks["right"] = directionChangeCallback
 
-    o = Dynamic.update(self, dt, obstacles, direction, callbacks) -- for some reason I have to call Dynamic.update with explicit self and explicitly return the object
+    o = Dynamic.update(self, dt, obstacles, direction, callbacks) -- for some reason I have to call Dynamic.update with explicit self and explicitly return the object (Dynamic:update returns the object already)
     return o
 end
 

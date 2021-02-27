@@ -140,6 +140,8 @@ function Dynamic:update(dt, obstacles, direction, updateCallbacks)
     end
     -------------------
 
+    print(#updateCallbacks)
+
     if self.statusB == 1 then
         if (self.x + 7.5 < self.platform.x + self.platform.width and self.x + self.width - 7.5 > self.platform.x)
             or
@@ -149,6 +151,7 @@ function Dynamic:update(dt, obstacles, direction, updateCallbacks)
                 self.x = self.x - 100 * dt
                 self.statusR = 0
                 -- Dynamic.updateAnimation(self, dt)
+                print(updateCallbacks[direction])
                 updateCallbacks[direction](self, dt)
             elseif self.direction == "right" and self.statusR ~= 1 then
                 self.x = self.x + 100 * dt
@@ -201,7 +204,8 @@ function Dynamic:update(dt, obstacles, direction, updateCallbacks)
             self:freeFallDelta(dt) -- но при вызове через "." нужно передавать в него self
         end
     elseif self.action == "throwAngle" then
-        self:throwAngleDelta(dt)
+        self:throwAngleDelta(dt, updateCallbacks)
+        -- Dynamic.throwAngleDelta(self, dt, updateCallbacks) -- it works too
     end
 
     Dynamic.detectCollision(self, obstacles)
@@ -262,14 +266,21 @@ function Dynamic:throwUp(v)
     end
 end
 
-function Dynamic:throwAngleDelta(t)
+function Dynamic:throwAngleDelta(t, callbacks)
+-- function Dynamic.throwAngleDelta(self, t, callbacks) -- it works too
+
+    print("--------throwAngleDelta--------- t " .. t)
+    print(#callbacks)
+
     local angleDeg = self.angle * 180 / math.pi
     if angleDeg < 90 then
         self.direction = "right"
         -- Dynamic.updateAnimation(self)
+        callbacks[self.direction](self, t)
     elseif angleDeg > 90 then
         self.direction = "left"
         -- Dynamic.updateAnimation(self)
+        callbacks[self.direction](self, t)
     end
 
     self.time = self.time + t*self.throwAngleTimeMultiplier
