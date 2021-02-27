@@ -8,15 +8,20 @@ local t
 ---------------
 
 function love.load()
+    require("playerClass")
+    dynamic = Player:new("player", 500, 0, nil, 30, 18, nil, 10)
+    dynamic:test()
+
+
     require("staticClass")
     obstacles = {}
 
-    require("dynamicClass")
-    dynamic = Dynamic.new("player", 500, 0, nil, 30, 18, nil, 10)
-    dynamic2 = Dynamic.new(2, 400, 0, nil, 30, 18, nil, 10)
-    dynamic3 = Dynamic.new(3, 300, 0, nil, nil, nil, nil, 10)
-    dynamic4 = Dynamic.new(4, 600, 0, nil, nil, nil, nil, 10)
-    dynamic5 = Dynamic.new(5, 700, 0, nil, nil, nil, nil, 10)
+    -- require("dynamicClass")
+    -- dynamic = Dynamic:new("player", 500, 0, nil, 30, 18, nil, 10)
+    -- dynamic2 = Dynamic:new(2, 400, 0, nil, 30, 18, nil, 10)
+    -- dynamic3 = Dynamic:new(3, 300, 0, nil, nil, nil, nil, 10)
+    -- dynamic4 = Dynamic:new(4, 600, 0, nil, nil, nil, nil, 10)
+    -- dynamic5 = Dynamic:new(5, 700, 0, nil, nil, nil, nil, 10)
 
     -- animation test
     -- img_right = love.graphics.newImage("hero_right.png")
@@ -31,22 +36,22 @@ function love.load()
 
     img_right = love.graphics.newImage("hero_right.png")
     dynamic:addAnimation(img_right, 16, 18, 1)
-    dynamic2:addAnimation(img_right, 16, 18, 1)
+    -- dynamic2:addAnimation(img_right, 16, 18, 1)
 
     img_left = love.graphics.newImage("hero_left.png")
     dynamic:addAnimation(img_left, 16, 18, 1)
-    dynamic2:addAnimation(img_left, 16, 18, 1)
+    -- dynamic2:addAnimation(img_left, 16, 18, 1)
 
     dynamic:setAnimation(1)
-    dynamic2:setAnimation(1)
+    -- dynamic2:setAnimation(1)
     -----------------
 
     obstacles = {
         dynamic,
-        dynamic2,
-        dynamic3,
-        dynamic4,
-        dynamic5
+        -- dynamic2,
+        -- dynamic3,
+        -- dynamic4,
+        -- dynamic5
     }
 
     spawnObstacle(300, 300, 600, 50) -- create platform
@@ -126,14 +131,14 @@ function love.update(dt)
             else
                 player = dynamic:update(dt, obstacles, "none") -- have to clear previous with NON nil value
             end
-            -- dynamic2:update(dt, obstacles, "none")
-            -- dynamic3:update(dt, obstacles, "none")
-            -- dynamic4:update(dt, obstacles, "none")
-            -- dynamic5:update(dt, obstacles, "none")
-            dynamic2:update(dt, obstacles)
-            dynamic3:update(dt, obstacles)
-            dynamic4:update(dt, obstacles)
-            dynamic5:update(dt, obstacles)
+            -- -- dynamic2:update(dt, obstacles, "none")
+            -- -- dynamic3:update(dt, obstacles, "none")
+            -- -- dynamic4:update(dt, obstacles, "none")
+            -- -- dynamic5:update(dt, obstacles, "none")
+            -- dynamic2:update(dt, obstacles)
+            -- dynamic3:update(dt, obstacles)
+            -- dynamic4:update(dt, obstacles)
+            -- dynamic5:update(dt, obstacles)
 
             for i,o in ipairs(obstacles) do
                 if o.type == "static" then
@@ -192,31 +197,31 @@ function love.update(dt)
                 table.insert(player_update, w)
             end
 
-            dynamic2:setUpdateData(
-                player_update[3],
-                player_update[4],
-                player_update[5],
-                player_update[6],
-                player_update[7],
-                player_update[8],
-                player_update[9],
-                player_update[10],
-                player_update[11],
-                player_update[12],
-                player_update[13],
-                player_update[14],
-                player_update[15],
-                player_update[16],
-                player_update[17],
-                player_update[18],
-                player_update[19],
-                player_update[20],
-
-                player_update[21],
-                player_update[22],
-                player_update[23],
-                player_update[24]
-            )
+            -- dynamic2:setUpdateData(
+            --     player_update[3],
+            --     player_update[4],
+            --     player_update[5],
+            --     player_update[6],
+            --     player_update[7],
+            --     player_update[8],
+            --     player_update[9],
+            --     player_update[10],
+            --     player_update[11],
+            --     player_update[12],
+            --     player_update[13],
+            --     player_update[14],
+            --     player_update[15],
+            --     player_update[16],
+            --     player_update[17],
+            --     player_update[18],
+            --     player_update[19],
+            --     player_update[20],
+            --
+            --     player_update[21],
+            --     player_update[22],
+            --     player_update[23],
+            --     player_update[24]
+            -- )
         end
     end
     ---------------
@@ -237,10 +242,10 @@ end
 function love.draw()
 
     dynamic:draw(true)
-    dynamic2:draw(true)
-    dynamic3:draw()
-    dynamic4:draw()
-    dynamic5:draw()
+    -- dynamic2:draw(true)
+    -- dynamic3:draw()
+    -- dynamic4:draw()
+    -- dynamic5:draw()
 
     for i,o in ipairs(obstacles) do
         o:draw()

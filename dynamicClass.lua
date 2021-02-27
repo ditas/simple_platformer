@@ -2,10 +2,11 @@ local g = 10
 local tick = 1/60
 
 Dynamic = {}
-Dynamic.__index = Dynamic
 
-function Dynamic.new(id, x, y, shape, width, height, baseSpeed, maxSpeed, angle, action, obstacles)
+function Dynamic:new(id, x, y, shape, width, height, baseSpeed, maxSpeed, angle, action, obstacles)
     local o = {}
+    setmetatable(o, self)
+    self.__index = self
 
     o.id = id or nil
     o.type = "dynamic"
@@ -38,29 +39,28 @@ function Dynamic.new(id, x, y, shape, width, height, baseSpeed, maxSpeed, angle,
 
     o.acc = 0
 
-    o.animation = nil
-    o.animations = {}
+    -- o.animation = nil
+    -- o.animations = {}
     o.direction = nil
 
-    setmetatable(o, Dynamic)
     return o
 end
 
-function Dynamic:addAnimation(image, width, height, duration)
-    local animation = {}
-    animation.spiteSheet = image
-    animation.quads = {}
-    animation.duration = duration or 1
-    animation.currentTime = 0
-
-    for y=0, image:getHeight()-height, height do
-        for x=0, image:getWidth()-width, width do
-            table.insert(animation.quads, love.graphics.newQuad(x, y, width, height, image:getDimensions()))
-        end
-    end
-
-    table.insert(self.animations, animation)
-end
+-- function Dynamic:addAnimation(image, width, height, duration)
+--     local animation = {}
+--     animation.spiteSheet = image
+--     animation.quads = {}
+--     animation.duration = duration or 1
+--     animation.currentTime = 0
+--
+--     for y=0, image:getHeight()-height, height do
+--         for x=0, image:getWidth()-width, width do
+--             table.insert(animation.quads, love.graphics.newQuad(x, y, width, height, image:getDimensions()))
+--         end
+--     end
+--
+--     table.insert(self.animations, animation)
+-- end
 
 function Dynamic:setUpdateData(
     x,
@@ -110,7 +110,7 @@ function Dynamic:setUpdateData(
     self.platform.height = tonumber(platform_height)
 end
 
-function Dynamic:update(dt, obstacles, direction)
+function Dynamic:update(dt, obstacles, direction, updateCallbacks)
 
     if direction ~= nil then
         self.direction = direction
@@ -148,11 +148,13 @@ function Dynamic:update(dt, obstacles, direction)
             if self.direction == "left" and self.statusL ~= 1 then
                 self.x = self.x - 100 * dt
                 self.statusR = 0
-                Dynamic.updateAnimation(self, dt)
+                -- Dynamic.updateAnimation(self, dt)
+                updateCallbacks[direction](self, dt)
             elseif self.direction == "right" and self.statusR ~= 1 then
                 self.x = self.x + 100 * dt
                 self.statusL = 0
-                Dynamic.updateAnimation(self, dt)
+                -- Dynamic.updateAnimation(self, dt)
+                updateCallbacks[direction](self, dt)
             end
         else
             self.statusB = 0
@@ -207,28 +209,28 @@ function Dynamic:update(dt, obstacles, direction)
     return self
 end
 
-function Dynamic:updateAnimation(dt)
-    if self.animations then
-        if self.direction == "right" and #self.animations > 0 then
-            self.animation = self.animations[1]
-        elseif self.direction == "left" and #self.animations > 0 then
-            self.animation = self.animations[2]
-        elseif #self.animations > 0 then
-            self.animation = self.animations[1]
-        end
+-- function Dynamic:updateAnimation(dt)
+--     if self.animations then
+--         if self.direction == "right" and #self.animations > 0 then
+--             self.animation = self.animations[1]
+--         elseif self.direction == "left" and #self.animations > 0 then
+--             self.animation = self.animations[2]
+--         elseif #self.animations > 0 then
+--             self.animation = self.animations[1]
+--         end
+--
+--         if self.animation and dt then
+--             self.animation.currentTime = self.animation.currentTime + dt
+--             if self.animation.currentTime >= self.animation.duration then
+--                 self.animation.currentTime = self.animation.currentTime - self.animation.duration
+--             end
+--         end
+--     end
+-- end
 
-        if self.animation and dt then
-            self.animation.currentTime = self.animation.currentTime + dt
-            if self.animation.currentTime >= self.animation.duration then
-                self.animation.currentTime = self.animation.currentTime - self.animation.duration
-            end
-        end
-    end
-end
-
-function Dynamic:setAnimation(index)
-    self.animation = self.animations[index]
-end
+-- function Dynamic:setAnimation(index)
+--     self.animation = self.animations[index]
+-- end
 
 function Dynamic:freeFallDelta(t)
     if self.baseSpeed < self.maxSpeed then
@@ -264,10 +266,10 @@ function Dynamic:throwAngleDelta(t)
     local angleDeg = self.angle * 180 / math.pi
     if angleDeg < 90 then
         self.direction = "right"
-        Dynamic.updateAnimation(self)
+        -- Dynamic.updateAnimation(self)
     elseif angleDeg > 90 then
         self.direction = "left"
-        Dynamic.updateAnimation(self)
+        -- Dynamic.updateAnimation(self)
     end
 
     self.time = self.time + t*self.throwAngleTimeMultiplier
@@ -347,17 +349,19 @@ function Dynamic:detectCollision(obstacles)
     end
 end
 
-function Dynamic:draw(isAnimate)
-    if self.animation then
-        if isAnimate then
-            spriteNum = math.floor(self.animation.currentTime/self.animation.duration * #self.animation.quads) + 1
-            love.graphics.draw(self.animation.spiteSheet, self.animation.quads[spriteNum], self.x, self.y)
-        elseif isAnimate == false then -- should be explicit "false" otherwise there are some frames when it's nil
-            love.graphics.draw(self.animation.spiteSheet, self.animation.quads[1], self.x, self.y)
-        end
-    else
-        love.graphics.rectangle("line", self.x, self.y, self.width, self.height)
-    end
+function Dynamic:draw()
+-- function Dynamic:draw(isAnimate)
+    -- if self.animation then
+    --     if isAnimate then
+    --         spriteNum = math.floor(self.animation.currentTime/self.animation.duration * #self.animation.quads) + 1
+    --         love.graphics.draw(self.animation.spiteSheet, self.animation.quads[spriteNum], self.x, self.y)
+    --     elseif isAnimate == false then -- should be explicit "false" otherwise there are some frames when it's nil
+    --         love.graphics.draw(self.animation.spiteSheet, self.animation.quads[1], self.x, self.y)
+    --     end
+    -- else
+    --     love.graphics.rectangle("line", self.x, self.y, self.width, self.height)
+    -- end
+
     -- debug
     love.graphics.rectangle("line", self.x, self.y, self.width, self.height)
 end
