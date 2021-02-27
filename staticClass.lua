@@ -3,6 +3,8 @@ Static.__index = Static
 
 function Static.new(x, y, shape, width, height)
     local o = {}
+
+    o.id = "tmp_static"
     o.type = "static"
 
     o.x = x or 0
@@ -10,6 +12,7 @@ function Static.new(x, y, shape, width, height)
     o.shape = shape or "rectangle"
     o.width = width or 50
     o.height = height or 300
+    o.square = o.width * o.height
     setmetatable(o, Static)
     return o
 end
