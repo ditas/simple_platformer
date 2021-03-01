@@ -20,9 +20,9 @@ function love.load()
     -- require("dynamicClass")
     -- dynamic = Dynamic:new("player", 500, 0, nil, 30, 18, nil, 10)
     -- dynamic2 = Dynamic:new(2, 400, 0, nil, 30, 18, nil, 10)
-    -- dynamic3 = Dynamic:new(3, 300, 0, nil, nil, nil, nil, 10)
-    -- dynamic4 = Dynamic:new(4, 600, 0, nil, nil, nil, nil, 10)
-    -- dynamic5 = Dynamic:new(5, 700, 0, nil, nil, nil, nil, 10)
+    dynamic3 = Dynamic:new(3, 300, 0, nil, nil, nil, nil, 10)
+    dynamic4 = Dynamic:new(4, 600, 0, nil, nil, nil, nil, 10)
+    dynamic5 = Dynamic:new(5, 700, 0, nil, nil, nil, nil, 10)
 
     -- animation test
     img_right = love.graphics.newImage("hero_right.png")
@@ -40,9 +40,9 @@ function love.load()
     obstacles = {
         dynamic,
         dynamic2,
-        -- dynamic3,
-        -- dynamic4,
-        -- dynamic5
+        dynamic3,
+        dynamic4,
+        dynamic5
     }
 
     spawnObstacle(300, 300, 600, 50) -- create platform
@@ -97,9 +97,9 @@ function love.update(dt)
             -- -- dynamic4:update(dt, obstacles, "none")
             -- -- dynamic5:update(dt, obstacles, "none")
             dynamic2:update(dt, obstacles)
-            -- dynamic3:update(dt, obstacles)
-            -- dynamic4:update(dt, obstacles)
-            -- dynamic5:update(dt, obstacles)
+            dynamic3:update(dt, obstacles)
+            dynamic4:update(dt, obstacles)
+            dynamic5:update(dt, obstacles)
 
             for i,o in ipairs(obstacles) do
                 if o.type == "static" then
@@ -198,9 +198,9 @@ function love.draw()
 
     dynamic:draw(true)
     dynamic2:draw(true)
-    -- dynamic3:draw()
-    -- dynamic4:draw()
-    -- dynamic5:draw()
+    dynamic3:draw()
+    dynamic4:draw()
+    dynamic5:draw()
 
     for i,o in ipairs(obstacles) do
         o:draw()
