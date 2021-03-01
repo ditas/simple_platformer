@@ -39,28 +39,10 @@ function Dynamic:new(id, x, y, shape, width, height, baseSpeed, maxSpeed, angle,
 
     o.acc = 0
 
-    -- o.animation = nil
-    -- o.animations = {}
     o.direction = nil
 
     return o
 end
-
--- function Dynamic:addAnimation(image, width, height, duration)
---     local animation = {}
---     animation.spiteSheet = image
---     animation.quads = {}
---     animation.duration = duration or 1
---     animation.currentTime = 0
---
---     for y=0, image:getHeight()-height, height do
---         for x=0, image:getWidth()-width, width do
---             table.insert(animation.quads, love.graphics.newQuad(x, y, width, height, image:getDimensions()))
---         end
---     end
---
---     table.insert(self.animations, animation)
--- end
 
 function Dynamic:setUpdateData(
     x,
@@ -140,8 +122,6 @@ function Dynamic:update(dt, obstacles, direction, updateCallbacks)
     end
     -------------------
 
-    print(#updateCallbacks)
-
     if self.statusB == 1 then
         if (self.x + 7.5 < self.platform.x + self.platform.width and self.x + self.width - 7.5 > self.platform.x)
             or
@@ -150,14 +130,13 @@ function Dynamic:update(dt, obstacles, direction, updateCallbacks)
             if self.direction == "left" and self.statusL ~= 1 then
                 self.x = self.x - 100 * dt
                 self.statusR = 0
-                -- Dynamic.updateAnimation(self, dt)
-                print(updateCallbacks[direction])
-                updateCallbacks[direction](self, dt)
+                -- updateCallbacks[direction](self, dt)
+                updateCallbacks[self.direction](self, dt)
             elseif self.direction == "right" and self.statusR ~= 1 then
                 self.x = self.x + 100 * dt
                 self.statusL = 0
-                -- Dynamic.updateAnimation(self, dt)
-                updateCallbacks[direction](self, dt)
+                -- updateCallbacks[direction](self, dt)
+                updateCallbacks[self.direction](self, dt)
             end
         else
             self.statusB = 0
@@ -205,36 +184,12 @@ function Dynamic:update(dt, obstacles, direction, updateCallbacks)
         end
     elseif self.action == "throwAngle" then
         self:throwAngleDelta(dt, updateCallbacks)
-        -- Dynamic.throwAngleDelta(self, dt, updateCallbacks) -- it works too
     end
 
     Dynamic.detectCollision(self, obstacles)
 
     return self
 end
-
--- function Dynamic:updateAnimation(dt)
---     if self.animations then
---         if self.direction == "right" and #self.animations > 0 then
---             self.animation = self.animations[1]
---         elseif self.direction == "left" and #self.animations > 0 then
---             self.animation = self.animations[2]
---         elseif #self.animations > 0 then
---             self.animation = self.animations[1]
---         end
---
---         if self.animation and dt then
---             self.animation.currentTime = self.animation.currentTime + dt
---             if self.animation.currentTime >= self.animation.duration then
---                 self.animation.currentTime = self.animation.currentTime - self.animation.duration
---             end
---         end
---     end
--- end
-
--- function Dynamic:setAnimation(index)
---     self.animation = self.animations[index]
--- end
 
 function Dynamic:freeFallDelta(t)
     if self.baseSpeed < self.maxSpeed then
@@ -250,7 +205,6 @@ function Dynamic:freeFallDelta(t)
 end
 
 function Dynamic:throwUpDelta(t)
-    -- print(t)
     if self.baseSpeed > 0 then
         speed = self.baseSpeed - g*t
         self.y = self.y - speed
@@ -266,20 +220,14 @@ function Dynamic:throwUp(v)
     end
 end
 
-function Dynamic:throwAngleDelta(t, callbacks)
 -- function Dynamic.throwAngleDelta(self, t, callbacks) -- it works too
-
-    print("--------throwAngleDelta--------- t " .. t)
-    print(#callbacks)
-
+function Dynamic:throwAngleDelta(t, callbacks)
     local angleDeg = self.angle * 180 / math.pi
     if angleDeg < 90 then
         self.direction = "right"
-        -- Dynamic.updateAnimation(self)
         callbacks[self.direction](self, t)
     elseif angleDeg > 90 then
         self.direction = "left"
-        -- Dynamic.updateAnimation(self)
         callbacks[self.direction](self, t)
     end
 
@@ -327,23 +275,15 @@ function Dynamic:detectCollision(obstacles)
             -------
 
                 if o.y + o.height <= self.y + 7.5 then
-                    -- print(self.id .. " top")
-
                     self.statusT = 1
                     self.action = "topBlocked"
                 elseif o.x + o.width <= self.x + 7.5 then
-                    -- print(self.id .. " left")
-
                     self.statusL = 1
                     self.action = "leftBlocked"
                 elseif o.x >= self.x + self.width - 7.5 then
-                    -- print(self.id .. " right")
-
                     self.statusR = 1
                     self.action = "rightBlocked"
                 elseif self.y + self.height - 7.5 < o.y then
-                    -- print(self.id .. " bottom")
-
                     self.statusB = 1
                     self.action = "stop"
 
@@ -361,18 +301,5 @@ function Dynamic:detectCollision(obstacles)
 end
 
 function Dynamic:draw()
--- function Dynamic:draw(isAnimate)
-    -- if self.animation then
-    --     if isAnimate then
-    --         spriteNum = math.floor(self.animation.currentTime/self.animation.duration * #self.animation.quads) + 1
-    --         love.graphics.draw(self.animation.spiteSheet, self.animation.quads[spriteNum], self.x, self.y)
-    --     elseif isAnimate == false then -- should be explicit "false" otherwise there are some frames when it's nil
-    --         love.graphics.draw(self.animation.spiteSheet, self.animation.quads[1], self.x, self.y)
-    --     end
-    -- else
-    --     love.graphics.rectangle("line", self.x, self.y, self.width, self.height)
-    -- end
-
-    -- debug
     love.graphics.rectangle("line", self.x, self.y, self.width, self.height)
 end

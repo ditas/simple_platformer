@@ -31,26 +31,16 @@ end
 
 -- function Animation:updateAnimation(self, dt) -- this works too, but it's not obvious to use explicit self with ":" function call
 function Animation.updateAnimation(self, dt)
-
-    print("----------2-----------CALLBACK " .. dt)
-
     if self.animations then
-
-        print("----------2.1-----------CALLBACK")
-
         if self.direction == "right" and #self.animations > 0 then
             self.animation = self.animations[1]
         elseif self.direction == "left" and #self.animations > 0 then
-            print("----------2.1.1-----------CALLBACK")
             self.animation = self.animations[2]
         elseif #self.animations > 0 then
             self.animation = self.animations[1]
         end
 
         if self.animation and dt then
-
-            print("----------2.1.2-----------CALLBACK")
-
             self.animation.currentTime = self.animation.currentTime + dt
             if self.animation.currentTime >= self.animation.duration then
                 self.animation.currentTime = self.animation.currentTime - self.animation.duration
@@ -64,8 +54,6 @@ function Animation:setAnimation(index)
 end
 
 function Animation:update(dt, obstacles, direction)
-
-    print("----------1-----------PRE CALLBACK " .. dt)
     callbacks = {}
     directionChangeCallback = function(s, t)
         Animation.updateAnimation(s, t)
@@ -88,4 +76,7 @@ function Animation:draw(isAnimate)
     else
         love.graphics.rectangle("line", self.x, self.y, self.width, self.height)
     end
+
+    -- debug
+    love.graphics.rectangle("line", self.x, self.y, self.width, self.height)
 end
