@@ -130,12 +130,10 @@ function Dynamic:update(dt, obstacles, direction, updateCallbacks)
             if self.direction == "left" and self.statusL ~= 1 then
                 self.x = self.x - 100 * dt
                 self.statusR = 0
-                -- updateCallbacks[direction](self, dt)
                 updateCallbacks[self.direction](self, dt)
             elseif self.direction == "right" and self.statusR ~= 1 then
                 self.x = self.x + 100 * dt
                 self.statusL = 0
-                -- updateCallbacks[direction](self, dt)
                 updateCallbacks[self.direction](self, dt)
             end
         else
@@ -187,8 +185,6 @@ function Dynamic:update(dt, obstacles, direction, updateCallbacks)
     end
 
     Dynamic.detectCollision(self, obstacles)
-
-    return self
 end
 
 function Dynamic:freeFallDelta(t)

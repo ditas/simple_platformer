@@ -61,8 +61,7 @@ function Animation:update(dt, obstacles, direction)
     callbacks["left"] = directionChangeCallback
     callbacks["right"] = directionChangeCallback
 
-    o = Dynamic.update(self, dt, obstacles, direction, callbacks) -- for some reason I have to call Dynamic.update with explicit self and explicitly return the object (Dynamic:update returns the object already)
-    return o
+    Dynamic.update(self, dt, obstacles, direction, callbacks)
 end
 
 function Animation:draw(isAnimate)
@@ -78,5 +77,5 @@ function Animation:draw(isAnimate)
     end
 
     -- debug
-    love.graphics.rectangle("line", self.x, self.y, self.width, self.height)
+    -- love.graphics.rectangle("line", self.x, self.y, self.width, self.height)
 end

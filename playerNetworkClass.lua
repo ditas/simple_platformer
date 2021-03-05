@@ -41,29 +41,18 @@ function Player:connect(address, port)
         udp:setpeername("*")
     end
 
-    print(udp)
-
     self.udp = udp
 end
 
 function Player:networkUpdate(dt)
     self.t = self.t + dt
 
-    print(self.client)
-
     if not self.client then
         data, from_ip, from_port = self.udp:receivefrom()
 
-        print(from_ip)
-
         self.udp:setpeername(from_ip, from_port)
         self.client = self.udp
-
-        print(self.client)
-
         self.client:settimeout(0)
-
-        return 2 -- return gameState update
     elseif self.t > self.updateRate then
         self:handleSelfUpdate()
     else
@@ -77,7 +66,7 @@ function Player:networkUpdate(dt)
         end
     end
 
-    return 2 -- TODO: doo I need this?
+    return 2
 end
 
 function Player:test()
@@ -151,6 +140,5 @@ function platformToDg(platform)
         string = string .. string.format(" %f", platform.width)
         string = string .. string.format(" %f", platform.height)
     end
-    -- print("--------------------------------------------------------------------------------STRING " .. string)
     return string
 end
