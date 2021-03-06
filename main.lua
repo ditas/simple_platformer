@@ -2,6 +2,8 @@
 local address, port = "127.0.0.1", 5555
 ---------------
 
+local jump = false
+
 function love.load()
     local screenWidth = 1600
     local screenHeight = 900
@@ -65,10 +67,20 @@ function love.update(dt)
         dt = 0.01666
 
         if gameState == 2 then
-            if love.keyboard.isDown("q") then
-                dynamic:update(dt, obstacles, "left")
-            elseif love.keyboard.isDown("e") then
-                dynamic:update(dt, obstacles, "right")
+            if love.keyboard.isDown("a") then
+                if jump then
+                    dynamic:throwAngle(50, 120)
+                else
+                    dynamic:update(dt, obstacles, "left")
+                end
+            elseif love.keyboard.isDown("d") then
+                if jump then
+                    dynamic:throwAngle(50, 60)
+                else
+                    dynamic:update(dt, obstacles, "right")
+                end
+            elseif jump then
+                dynamic:throwUp(5)
             else
                 dynamic:update(dt, obstacles, "none") -- have to clear previous with NON nil value
             end
@@ -91,6 +103,8 @@ function love.update(dt)
     dynamic:updateOpponents({dynamic2})
     gameState = dynamic:networkUpdate(dt)
     ---------------
+
+    jump = false
 end
 
 function love.draw()
@@ -109,28 +123,31 @@ function love.draw()
 end
 
 function love.keypressed(key)
-    if key == "up" then
-        dynamic:throwUp(5)
+    if key == "space" then
+        jump = true
     end
-    if key == "left" then
-        dynamic:throwAngle(50, 135)
-    end
-    if key == "right" then
-        dynamic:throwAngle(50, 45)
-    end
-
-    if key == "w" then
-        spawnObstacle(0, 0, 300, 50)
-    end
-    if key == "a" then
-        spawnObstacle(0, 0, 50, 300)
-    end
-    if key == "d" then
-        spawnObstacle(300, 0, 50, 300)
-    end
-    -- if key == "s" then
-    --     spawnObstacle(300, 300, 600, 50)
+    -- if key == "up" then
+    --     dynamic:throwUp(5)
     -- end
+    -- if key == "left" then
+    --     dynamic:throwAngle(50, 135)
+    -- end
+    -- if key == "right" then
+    --     dynamic:throwAngle(50, 45)
+    -- end
+    --
+    -- if key == "w" then
+    --     spawnObstacle(0, 0, 300, 50)
+    -- end
+    -- if key == "a" then
+    --     spawnObstacle(0, 0, 50, 300)
+    -- end
+    -- if key == "d" then
+    --     spawnObstacle(300, 0, 50, 300)
+    -- end
+    -- -- if key == "s" then
+    -- --     spawnObstacle(300, 300, 600, 50)
+    -- -- end
 end
 
 function spawnObstacle(x, y, width, height)
