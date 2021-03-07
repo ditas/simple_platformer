@@ -16,6 +16,8 @@ function Player:new(id, x, y, shape, width, height, baseSpeed, maxSpeed, angle, 
     self.updateRate = 0.1
     self.t = 0
 
+    o:setIsMovable(true) -- players are movable by default
+
     return o
 end
 

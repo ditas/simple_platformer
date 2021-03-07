@@ -79,5 +79,5 @@ function Animation:draw(isAnimate)
     end
 
     -- debug
-    -- love.graphics.rectangle("line", self.x, self.y, self.width, self.height)
+    love.graphics.rectangle("line", self.x, self.y, self.width, self.height)
 end

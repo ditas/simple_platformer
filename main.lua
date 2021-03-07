@@ -36,6 +36,7 @@ function love.load()
     dynamic3 = Dynamic:new(3, 300, 0, nil, nil, nil, nil, 10)
     dynamic4 = Dynamic:new(4, 600, 0, nil, nil, nil, nil, 10)
     dynamic5 = Dynamic:new(5, 700, 0, nil, nil, nil, nil, 10)
+    dynamic5:setIsMovable(true)
 
     require("staticClass")
     obstacles = {}

@@ -44,7 +44,13 @@ function Dynamic:new(id, x, y, shape, width, height, baseSpeed, maxSpeed, angle,
 
     o.isJump = false
 
+    o.isMovable = false
+
     return o
+end
+
+function Dynamic:setIsMovable(isMovable)
+    self.isMovable = isMovable or false
 end
 
 function Dynamic:setUpdateData(
@@ -101,28 +107,30 @@ function Dynamic:update(dt, obstacles, direction, updateCallbacks)
         self.direction = direction
     end
 
-    -- print("----" .. self.id .."-----ACTION: " .. self.action .. " statusB: " .. self.statusB .. " statusL: " .. self.statusL .. " statusR: " .. self.statusR)
+    print("----" .. self.id .."-----ACTION: " .. self.action .. " statusB: " .. self.statusB .. " statusL: " .. self.statusL .. " statusR: " .. self.statusR .. " statusT " .. self.statusT)
     -- print(self.direction)
     -- print(self.isJump)
 
     -- stuck prevention
-    if self.statusB == 1 and self.statusL == 1 then
-        self.x = self.x + 1
-        self.y = self.y - 0.5
-        self.statusL = 0
-    end
+    if self.isMovable == true then
+        if self.statusB == 1 and self.statusL == 1 then
+            self.x = self.x + 1
+            self.y = self.y - 0.5
+            -- self.statusL = 0
+        end
 
-    if self.statusB == 1 and self.statusR == 1 then
-        self.x = self.x - 1
-        self.y = self.y - 0.5
-        self.statusR = 0
-    end
+        if self.statusB == 1 and self.statusR == 1 then
+            self.x = self.x - 1
+            self.y = self.y - 0.5
+            -- self.statusR = 0
+        end
 
-    if self.statusB == 1
-        and self.platform.y ~= nil
-    then
-        if self.y + self.height + 7.5 > self.platform.y then
-            self.y = self.y - 0.1
+        if self.statusB == 1
+            and self.platform.y ~= nil
+        then
+            if self.y + self.height + 7.5 > self.platform.y then
+                self.y = self.y - 0.1
+            end
         end
     end
     -------------------
