@@ -42,12 +42,12 @@ function love.load()
     img_right2 = love.graphics.newImage("Dude_Monster_Run_6_right.png")
     img_left2 = love.graphics.newImage("Dude_Monster_Run_6_left.png")
 
-    dynamic:addAnimation(img_right1, 32, 32, 0.5)
-    dynamic:addAnimation(img_left1, 32, 32, 0.5)
+    dynamic:addAnimation(img_right1, 32, 32, 0.4)
+    dynamic:addAnimation(img_left1, 32, 32, 0.4)
     dynamic:setAnimation(1)
 
-    dynamic2:addAnimation(img_right2, 32, 32, 0.5)
-    dynamic2:addAnimation(img_left2, 32, 32, 0.5)
+    dynamic2:addAnimation(img_right2, 32, 32, 0.4)
+    dynamic2:addAnimation(img_left2, 32, 32, 0.4)
     dynamic2:setAnimation(1)
     -----------------
 
@@ -82,11 +82,11 @@ function love.update(dt)
         if gameState == 2 then
             if jump then
                 if love.keyboard.isDown("a") then
-                    dynamic:throwAngle(40, 120)
+                    dynamic:throwAngle(50, 120)
                 elseif love.keyboard.isDown("d") then
-                    dynamic:throwAngle(40, 60)
+                    dynamic:throwAngle(50, 60)
                 else
-                    dynamic:throwUp(5)
+                    dynamic:throwUp(7)
                 end
             else
                 if love.keyboard.isDown("a") then

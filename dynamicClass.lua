@@ -100,28 +100,30 @@ function Dynamic:update(dt, obstacles, direction, updateCallbacks)
         self.direction = direction
     end
 
-    -- print("----" .. self.id .."-----ACTION: " .. self.action .. " DIR: " .. direction .. " statusB: " .. self.statusB .. " statusL: " .. self.statusL .. " statusR: " .. self.statusR)
+    print("----" .. self.id .."-----ACTION: " .. self.action .. " statusB: " .. self.statusB .. " statusL: " .. self.statusL .. " statusR: " .. self.statusR)
+    print(self.direction)
+    print(self.isJump)
 
     -- stuck prevention
-    if self.statusB == 1 and self.statusL == 1 then
-        self.x = self.x + 1
-        self.y = self.y - 0.5
-        self.statusL = 0
-    end
-
-    if self.statusB == 1 and self.statusR == 1 then
-        self.x = self.x - 1
-        self.y = self.y - 0.5
-        self.statusR = 0
-    end
-
-    if self.statusB == 1
-        and self.platform.y ~= nil
-    then
-        if self.y + self.height + 7.5 > self.platform.y then
-            self.y = self.y - 0.1
-        end
-    end
+    -- if self.statusB == 1 and self.statusL == 1 then
+    --     self.x = self.x + 1
+    --     self.y = self.y - 0.5
+    --     self.statusL = 0
+    -- end
+    --
+    -- if self.statusB == 1 and self.statusR == 1 then
+    --     self.x = self.x - 1
+    --     self.y = self.y - 0.5
+    --     self.statusR = 0
+    -- end
+    --
+    -- if self.statusB == 1
+    --     and self.platform.y ~= nil
+    -- then
+    --     if self.y + self.height + 7.5 > self.platform.y then
+    --         self.y = self.y - 0.1
+    --     end
+    -- end
     -------------------
 
     if self.statusB == 1 then
@@ -130,11 +132,11 @@ function Dynamic:update(dt, obstacles, direction, updateCallbacks)
             (self.platform.x + 7.5 < self.x + self.width and self.platform.x + self.platform.width - 7.5 > self.x)
         then
             if self.direction == "left" and self.statusL ~= 1 then
-                self.x = self.x - 100 * dt
+                self.x = self.x - 150 * dt
                 self.statusR = 0
                 updateCallbacks[self.direction](self, dt)
             elseif self.direction == "right" and self.statusR ~= 1 then
-                self.x = self.x + 100 * dt
+                self.x = self.x + 150 * dt
                 self.statusL = 0
                 updateCallbacks[self.direction](self, dt)
             end
