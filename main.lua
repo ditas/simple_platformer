@@ -1,8 +1,21 @@
+-- TODO:
+-- handle isJump over network
+-- handle projectiles over network
+-- remove projectiles from over the screen size
+-- screen to follow up player
+-- detect projectiles collisions
+-- handle window movement (???)
+-- add gun to player -> point gun to the mouse (???)
+
 -- network test
 local address, port = "127.0.0.1", 5555
 ---------------
 
 local jump = false
+
+-- proj test
+local projs = {}
+------------
 
 function love.load()
     local screenWidth = 1600
@@ -67,40 +80,6 @@ function love.update(dt)
         dt = 0.01666
 
         if gameState == 2 then
-            -- if love.keyboard.isDown("a") then
-            --     if jump then
-            --         dynamic:throwAngle(50, 120)
-            --     else
-            --         dynamic:update(dt, obstacles, "left")
-            --     end
-            -- elseif love.keyboard.isDown("d") then
-            --     if jump then
-            --         dynamic:throwAngle(50, 60)
-            --     else
-            --         dynamic:update(dt, obstacles, "right")
-            --     end
-            -- elseif jump then
-            --     dynamic:throwUp(5)
-            -- else
-            --     dynamic:update(dt, obstacles, "none") -- have to clear previous with NON nil value
-            -- end
-
-            -- if love.keyboard.isDown("a") and jump then
-            --         -- dynamic:update(dt, obstacles, "left")
-            --     dynamic:throwAngle(50, 120)
-            -- elseif love.keyboard.isDown("d") and jump then
-            --         -- dynamic:update(dt, obstacles, "right")
-            --     dynamic:throwAngle(50, 60)
-            -- elseif love.keyboard.isDown("a") then
-            --     dynamic:update(dt, obstacles, "left")
-            -- elseif love.keyboard.isDown("d") then
-            --     dynamic:update(dt, obstacles, "right")
-            -- elseif jump then
-            --     dynamic:throwUp(5)
-            -- else
-            --     dynamic:update(dt, obstacles, "none") -- have to clear previous with NON nil value
-            -- end
-
             if jump then
                 if love.keyboard.isDown("a") then
                     dynamic:throwAngle(40, 120)
@@ -139,6 +118,13 @@ function love.update(dt)
     ---------------
 
     jump = false
+
+    -- proj test
+    for i,p in ipairs(projs) do
+        p.x = p.x + math.cos(p.direction) * p.speed * dt
+        p.y = p.y + math.sin(p.direction) * p.speed * dt
+    end
+    ------------
 end
 
 function love.draw()
@@ -153,6 +139,12 @@ function love.draw()
         o:draw()
     end
 
+    -- proj test
+    for i,p in ipairs(projs) do
+        love.graphics.circle("fill", p.x, p.y, 3)
+    end
+    ------------
+
     love.graphics.print("Current FPS: "..tostring(love.timer.getFPS( )), 10, 10)
 end
 
@@ -160,31 +152,37 @@ function love.keypressed(key)
     if key == "space" then
         jump = true
     end
-    -- if key == "up" then
-    --     dynamic:throwUp(5)
-    -- end
-    -- if key == "left" then
-    --     dynamic:throwAngle(50, 135)
-    -- end
-    -- if key == "right" then
-    --     dynamic:throwAngle(50, 45)
-    -- end
-    --
-    -- if key == "w" then
-    --     spawnObstacle(0, 0, 300, 50)
-    -- end
-    -- if key == "a" then
-    --     spawnObstacle(0, 0, 50, 300)
-    -- end
-    -- if key == "d" then
-    --     spawnObstacle(300, 0, 50, 300)
-    -- end
-    -- -- if key == "s" then
-    -- --     spawnObstacle(300, 300, 600, 50)
-    -- -- end
 end
 
 function spawnObstacle(x, y, width, height)
     obstacle = Static.new(x, y, nil, width, height)
     table.insert(obstacles, obstacle)
 end
+
+-- proj test
+function love.mousepressed(x, y, button, istouch, presses)
+    if button == 1 and gameState == 2 then
+        shotProj(dynamic)
+    end
+end
+
+function shotProj(player)
+    local proj = {}
+
+    proj.x = player.x + player.width/2
+    proj.y = player.y + player.height/2
+
+    proj.speed = 300
+    proj.direction = playerMouseAngle(player)
+    proj.dead = false
+
+    table.insert(projs, proj)
+end
+
+function playerMouseAngle(player)
+    local x = player.x + player.width/2
+    local y = player.y + player.height/2
+    -- return math.atan2(y - love.mouse.getY(), x - love.mouse.getX()) + math.pi -- this is getting from PLAYER to MOUSE but rotated on 180 deg (Pi)
+    return math.atan2(love.mouse.getY() - y, love.mouse.getX() - x) -- this is without additional rotation
+end
+------------
