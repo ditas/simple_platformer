@@ -11,7 +11,13 @@
 local address, port = "127.0.0.1", 5555
 ---------------
 
+local fixedDT = 0.01666667
 local jump = false
+local jumpUpSpeed = 7
+local jumpAngleSpeed = 50
+local jumpLeftAngle = 120
+local jumpRightAngle = 60
+local animationSpeed = 0.4
 
 -- proj test
 local projs = {}
@@ -42,12 +48,12 @@ function love.load()
     img_right2 = love.graphics.newImage("Dude_Monster_Run_6_right.png")
     img_left2 = love.graphics.newImage("Dude_Monster_Run_6_left.png")
 
-    dynamic:addAnimation(img_right1, 32, 32, 0.4)
-    dynamic:addAnimation(img_left1, 32, 32, 0.4)
+    dynamic:addAnimation(img_right1, 32, 32, animationSpeed)
+    dynamic:addAnimation(img_left1, 32, 32, animationSpeed)
     dynamic:setAnimation(1)
 
-    dynamic2:addAnimation(img_right2, 32, 32, 0.4)
-    dynamic2:addAnimation(img_left2, 32, 32, 0.4)
+    dynamic2:addAnimation(img_right2, 32, 32, animationSpeed)
+    dynamic2:addAnimation(img_left2, 32, 32, animationSpeed)
     dynamic2:setAnimation(1)
     -----------------
 
@@ -75,18 +81,18 @@ dtotal = 0
 function love.update(dt)
     dtotal = dtotal + dt
 
-    if dtotal >= 0.01666 then
-        dtotal = dtotal - 0.01666
-        dt = 0.01666
+    if dtotal >= fixedDT then
+        dtotal = dtotal - fixedDT
+        dt = fixedDT
 
         if gameState == 2 then
             if jump then
                 if love.keyboard.isDown("a") then
-                    dynamic:throwAngle(50, 120)
+                    dynamic:throwAngle(jumpAngleSpeed, jumpLeftAngle)
                 elseif love.keyboard.isDown("d") then
-                    dynamic:throwAngle(50, 60)
+                    dynamic:throwAngle(jumpAngleSpeed, jumpRightAngle)
                 else
-                    dynamic:throwUp(7)
+                    dynamic:throwUp(jumpUpSpeed)
                 end
             else
                 if love.keyboard.isDown("a") then

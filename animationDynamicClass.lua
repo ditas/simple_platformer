@@ -65,9 +65,6 @@ function Animation:update(dt, obstacles, direction)
 end
 
 function Animation:draw(isAnimate)
-
-    print(isAnimate)
-
     if self.animation then
         if isAnimate and not self.isJump then
             spriteNum = math.floor(self.animation.currentTime/self.animation.duration * #self.animation.quads) + 1
