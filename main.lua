@@ -6,6 +6,7 @@
 -- detect projectiles collisions
 -- handle window movement (???)
 -- add gun to player -> point gun to the mouse (???)
+-- TODO: the pushing issue fix is creating another issue, when I can't get though the line between 2 dynamics (well, I can jump it over)
 
 -- network test
 local address, port = "127.0.0.1", 5555
@@ -35,6 +36,7 @@ function love.load()
 
     dynamic3 = Dynamic:new(3, 300, 0, nil, nil, nil, nil, 10)
     dynamic4 = Dynamic:new(4, 600, 0, nil, nil, nil, nil, 10)
+    dynamic4:setIsMovable(true)
     dynamic5 = Dynamic:new(5, 700, 0, nil, nil, nil, nil, 10)
     dynamic5:setIsMovable(true)
 

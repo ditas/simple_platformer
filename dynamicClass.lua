@@ -116,13 +116,11 @@ function Dynamic:update(dt, obstacles, direction, updateCallbacks)
         if self.statusB == 1 and self.statusL == 1 then
             self.x = self.x + 1
             self.y = self.y - 0.5
-            -- self.statusL = 0
         end
 
         if self.statusB == 1 and self.statusR == 1 then
             self.x = self.x - 1
             self.y = self.y - 0.5
-            -- self.statusR = 0
         end
 
         if self.statusB == 1
