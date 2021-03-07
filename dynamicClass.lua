@@ -41,6 +41,8 @@ function Dynamic:new(id, x, y, shape, width, height, baseSpeed, maxSpeed, angle,
 
     o.direction = nil
 
+    o.isJump = false
+
     return o
 end
 
@@ -188,6 +190,7 @@ function Dynamic:update(dt, obstacles, direction, updateCallbacks)
 end
 
 function Dynamic:freeFallDelta(t)
+    self.isJump = false
     if self.baseSpeed < self.maxSpeed then
         speed = self.baseSpeed + g*t
         self.y = self.y + speed
@@ -209,6 +212,7 @@ function Dynamic:throwUpDelta(t)
 end
 
 function Dynamic:throwUp(v)
+    self.isJump = true
     if self.action ~= "topBlocked" then
         self.baseSpeed = v
         self.action = "throwUp"
@@ -235,6 +239,7 @@ function Dynamic:throwAngleDelta(t, callbacks)
 end
 
 function Dynamic:throwAngle(v, alpha, throwAngleTimeMultiplier)
+    self.isJump = true
     if self.action ~= "topBlocked" then
         if alpha < 90 and self.statusR ~= 1 and self.action ~= "rightBlocked" then
             self:applyAngleMovement(v, alpha, throwAngleTimeMultiplier)

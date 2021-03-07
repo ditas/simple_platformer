@@ -47,9 +47,9 @@ function love.load()
     }
 
     -- create platforms
-    spawnObstacle(150, 150, 300, 30)
-    spawnObstacle(350, 350, 450, 30)
-    spawnObstacle(650, 650, 600, 30)
+    spawnObstacle(150, 150, 300, 50)
+    spawnObstacle(350, 350, 450, 50)
+    spawnObstacle(650, 650, 600, 50)
 
     -- network test
     dynamic:connect(address, port)
@@ -67,22 +67,56 @@ function love.update(dt)
         dt = 0.01666
 
         if gameState == 2 then
-            if love.keyboard.isDown("a") then
-                if jump then
-                    dynamic:throwAngle(50, 120)
+            -- if love.keyboard.isDown("a") then
+            --     if jump then
+            --         dynamic:throwAngle(50, 120)
+            --     else
+            --         dynamic:update(dt, obstacles, "left")
+            --     end
+            -- elseif love.keyboard.isDown("d") then
+            --     if jump then
+            --         dynamic:throwAngle(50, 60)
+            --     else
+            --         dynamic:update(dt, obstacles, "right")
+            --     end
+            -- elseif jump then
+            --     dynamic:throwUp(5)
+            -- else
+            --     dynamic:update(dt, obstacles, "none") -- have to clear previous with NON nil value
+            -- end
+
+            -- if love.keyboard.isDown("a") and jump then
+            --         -- dynamic:update(dt, obstacles, "left")
+            --     dynamic:throwAngle(50, 120)
+            -- elseif love.keyboard.isDown("d") and jump then
+            --         -- dynamic:update(dt, obstacles, "right")
+            --     dynamic:throwAngle(50, 60)
+            -- elseif love.keyboard.isDown("a") then
+            --     dynamic:update(dt, obstacles, "left")
+            -- elseif love.keyboard.isDown("d") then
+            --     dynamic:update(dt, obstacles, "right")
+            -- elseif jump then
+            --     dynamic:throwUp(5)
+            -- else
+            --     dynamic:update(dt, obstacles, "none") -- have to clear previous with NON nil value
+            -- end
+
+            if jump then
+                if love.keyboard.isDown("a") then
+                    dynamic:throwAngle(40, 120)
+                elseif love.keyboard.isDown("d") then
+                    dynamic:throwAngle(40, 60)
                 else
-                    dynamic:update(dt, obstacles, "left")
+                    dynamic:throwUp(5)
                 end
-            elseif love.keyboard.isDown("d") then
-                if jump then
-                    dynamic:throwAngle(50, 60)
-                else
-                    dynamic:update(dt, obstacles, "right")
-                end
-            elseif jump then
-                dynamic:throwUp(5)
             else
-                dynamic:update(dt, obstacles, "none") -- have to clear previous with NON nil value
+                if love.keyboard.isDown("a") then
+                    dynamic:update(dt, obstacles, "left")
+                elseif love.keyboard.isDown("d") then
+                    dynamic:update(dt, obstacles, "right")
+                else
+                    dynamic:update(dt, obstacles, "none") -- have to clear previous with NON nil value
+                end
             end
 
             dynamic2:update(dt, obstacles)

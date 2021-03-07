@@ -66,11 +66,13 @@ end
 
 function Animation:draw(isAnimate)
     if self.animation then
-        if isAnimate then
+        if isAnimate and not self.isJump then
             spriteNum = math.floor(self.animation.currentTime/self.animation.duration * #self.animation.quads) + 1
-            love.graphics.draw(self.animation.spiteSheet, self.animation.quads[spriteNum], self.x, self.y)
+            love.graphics.draw(self.animation.spiteSheet, self.animation.quads[spriteNum], self.x, self.y, 0, 1.5, 1.5)
+        elseif isAnimate then
+            love.graphics.draw(self.animation.spiteSheet, self.animation.quads[1], self.x, self.y, 0, 1.5, 1.5)
         elseif isAnimate == false then -- should be explicit "false" otherwise there are some frames when it's nil
-            love.graphics.draw(self.animation.spiteSheet, self.animation.quads[1], self.x, self.y)
+            love.graphics.draw(self.animation.spiteSheet, self.animation.quads[1], self.x, self.y, 0, 1.5, 1.5)
         end
     else
         love.graphics.rectangle("line", self.x, self.y, self.width, self.height)
