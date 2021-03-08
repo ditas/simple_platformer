@@ -20,13 +20,16 @@ local jumpLeftAngle = 120
 local jumpRightAngle = 60
 local animationSpeed = 0.4
 
+local screenWidth = 1600
+local screenHeight = 900
+
 -- proj test
 local projs = {}
 ------------
 
 function love.load()
-    local screenWidth = 1600
-    local screenHeight = 900
+    -- local screenWidth = 1600
+    -- local screenHeight = 900
     local screenFlags = {}
     love.window.setMode(screenWidth, screenHeight, screenFlags)
 
@@ -70,12 +73,19 @@ function love.load()
 
     -- create platforms
     spawnObstacle(150, 150, 300, 50)
-    spawnObstacle(350, 350, 450, 50)
-    spawnObstacle(650, 650, 600, 50)
+        spawnObstacle(350, 200, 300, 50)
+
+        spawnObstacle(350, 350, 450, 50)
+
+                spawnObstacle(650, 650, 600, 50)
 
     -- network test
     dynamic:connect(address, port)
     ---------------
+
+    sprites = {}
+    sprites.crosshairs = love.graphics.newImage('crosshairs.png')
+    love.mouse.setVisible(false)
 
     gameState = 1
 end
@@ -138,23 +148,45 @@ end
 
 function love.draw()
 
-    dynamic:draw(true)
-    dynamic2:draw(true)
-    dynamic3:draw()
-    dynamic4:draw()
-    dynamic5:draw()
+    -- follow player test
+    -- love.graphics.push()
+    love.graphics.translate(-dynamic.x+(screenWidth/2), -dynamic.y+(screenHeight/2))
+        -- draw map here
 
-    for i,o in ipairs(obstacles) do
-        o:draw()
-    end
+        dynamic:draw(true)
+        dynamic2:draw(true)
+        dynamic3:draw()
+        dynamic4:draw()
+        dynamic5:draw()
+        for i,o in ipairs(obstacles) do
+            o:draw()
+        end
 
-    -- proj test
+        -- -- proj test "A" (starts at right position, goes to the wrong one)
+        -- for i,p in ipairs(projs) do
+        --     love.graphics.circle("fill", p.x, p.y, 3)
+        -- end
+        -- ------------
+
+    -- love.graphics.pop()
+    -- draw gui here
+
+    love.graphics.draw(sprites.crosshairs, love.mouse.getX()-20, love.mouse.getY()-20)
+
+    -- proj test (starts at wrong position goes to the right one)
     for i,p in ipairs(projs) do
         love.graphics.circle("fill", p.x, p.y, 3)
     end
     ------------
+    -- -- proj test -- this is the same as "A"
+    -- for i,p in ipairs(projs) do
+    --     love.graphics.circle("fill", p.x - dynamic.x+(screenWidth/2), p.y - dynamic.y+(screenHeight/2), 3)
+    -- end
+    -- ------------
+    ---------------------
 
     love.graphics.print("Current FPS: "..tostring(love.timer.getFPS( )), 10, 10)
+
 end
 
 function love.keypressed(key)
@@ -178,8 +210,8 @@ end
 function shotProj(player)
     local proj = {}
 
-    proj.x = player.x + player.width/2
-    proj.y = player.y + player.height/2
+    proj.x = player.x + player.width/2 -- - player.x+(screenWidth/2)
+    proj.y = player.y + player.height/2 -- - player.y+(screenHeight/2)
 
     proj.speed = 300
     proj.direction = playerMouseAngle(player)
@@ -189,9 +221,12 @@ function shotProj(player)
 end
 
 function playerMouseAngle(player)
-    local x = player.x + player.width/2
-    local y = player.y + player.height/2
+    local x = player.x + player.width/2 -- - player.x+(screenWidth/2)
+    local y = player.y + player.height/2 -- - player.x+(screenWidth/2)
+
+    local mX = love.mouse.getX() -- + dynamic.x+(screenWidth/2)
+    local mY = love.mouse.getY() -- + dynamic.y+(screenHeight/2)
     -- return math.atan2(y - love.mouse.getY(), x - love.mouse.getX()) + math.pi -- this is getting from PLAYER to MOUSE but rotated on 180 deg (Pi)
-    return math.atan2(love.mouse.getY() - y, love.mouse.getX() - x) -- this is without additional rotation
+    return math.atan2(mY - y, mX - x) -- this is without additional rotation
 end
 ------------
