@@ -149,7 +149,7 @@ end
 function love.draw()
 
     -- follow player test
-    -- love.graphics.push()
+    love.graphics.push()
     love.graphics.translate(-dynamic.x+(screenWidth/2), -dynamic.y+(screenHeight/2))
         -- draw map here
 
@@ -162,22 +162,22 @@ function love.draw()
             o:draw()
         end
 
-        -- -- proj test "A" (starts at right position, goes to the wrong one)
-        -- for i,p in ipairs(projs) do
-        --     love.graphics.circle("fill", p.x, p.y, 3)
-        -- end
-        -- ------------
+        love.graphics.draw(sprites.crosshairs, love.mouse.getX()-20, love.mouse.getY()-20)
+        -- proj test "A" (starts at right position, goes to the wrong one)
+        for i,p in ipairs(projs) do
+            love.graphics.circle("fill", p.x, p.y, 3)
+        end
+        ------------
 
-    -- love.graphics.pop()
+    love.graphics.pop()
     -- draw gui here
 
-    love.graphics.draw(sprites.crosshairs, love.mouse.getX()-20, love.mouse.getY()-20)
-
-    -- proj test (starts at wrong position goes to the right one)
-    for i,p in ipairs(projs) do
-        love.graphics.circle("fill", p.x, p.y, 3)
-    end
-    ------------
+    -- love.graphics.draw(sprites.crosshairs, love.mouse.getX()-20, love.mouse.getY()-20)
+    -- -- proj test (starts at wrong position goes to the right one)
+    -- for i,p in ipairs(projs) do
+    --     love.graphics.circle("fill", p.x, p.y, 3)
+    -- end
+    -- ------------
     -- -- proj test -- this is the same as "A"
     -- for i,p in ipairs(projs) do
     --     love.graphics.circle("fill", p.x - dynamic.x+(screenWidth/2), p.y - dynamic.y+(screenHeight/2), 3)
