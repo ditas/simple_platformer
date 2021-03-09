@@ -1,12 +1,14 @@
 -- TODO:
--- handle isJump over network
+-- handle id over network
+-- handle ALL dynamics updates over network (to avoid the case when it's has slightly different positions probably because of some minor coordinate difference)
+-- handle isJump over network (do I need this?)
 -- handle projectiles over network
--- remove projectiles from over the screen size
--- screen to follow up player
--- detect projectiles collisions
+--      remove projectiles from over the screen size
+--      screen to follow up player
+--      detect projectiles collisions
 -- handle window movement (???)
 -- add gun to player -> point gun to the mouse (???)
--- TODO: the pushing issue fix is creating another issue, when I can't get though the line between 2 dynamics (well, I can jump it over)
+-- TODO: the pushing issue fix creates another issue, when I can't get through the line between 2 dynamics (well, I can jump over it)
 
 -- network test
 local address, port = "127.0.0.1", 5555
@@ -22,15 +24,14 @@ local animationSpeed = 0.4
 
 local screenWidth = 1600
 local screenHeight = 900
+local screenFlags = {fullscreen = false} -- set fullscreen to avoid issues with pointer detached from crosshairs
 
 -- proj test
 local projs = {}
 ------------
 
 function love.load()
-    -- local screenWidth = 1600
-    -- local screenHeight = 900
-    local screenFlags = {}
+
     love.window.setMode(screenWidth, screenHeight, screenFlags)
 
     require("playerNetworkClass")
@@ -139,9 +140,33 @@ function love.update(dt)
     jump = false
 
     -- proj test
+    print(#projs)
+
     for i,p in ipairs(projs) do
         p.x = p.x + math.cos(p.direction) * p.speed * dt
         p.y = p.y + math.sin(p.direction) * p.speed * dt
+    end
+
+    for i=#projs, 1, -1 do
+        local p = projs[i]
+        if p.x > love.graphics.getWidth() + screenWidth/2 or p.x < 0 - screenWidth/2 or p.y > love.graphics.getHeight() + screenHeight/2 or p.y < 0 - screenHeight/2 or p.dead == true then
+            table.remove(projs, i)
+        end
+    end
+
+    for i,o in ipairs(obstacles) do
+        for n,p in ipairs(projs) do
+            if isCollided(o, p) then
+                p.dead = true
+            end
+        end
+    end
+
+    for i=#obstacles, 1, -1 do
+        local o = obstacles[i]
+        if o.dead == true then
+            table.remove(obstacles, i)
+        end
     end
     ------------
 end
@@ -153,37 +178,28 @@ function love.draw()
     love.graphics.translate(-dynamic.x+(screenWidth/2), -dynamic.y+(screenHeight/2))
         -- draw map here
 
-        dynamic:draw(true)
-        dynamic2:draw(true)
-        dynamic3:draw()
-        dynamic4:draw()
-        dynamic5:draw()
+        -- dynamic:draw(true)
+        -- dynamic2:draw(true)
+        -- dynamic3:draw()
+        -- dynamic4:draw()
+        -- dynamic5:draw()
         for i,o in ipairs(obstacles) do
-            o:draw()
+            if o.type == "player" then
+                o:draw(true)
+            else
+                o:draw()
+            end
         end
 
         love.graphics.draw(sprites.crosshairs, love.mouse.getX()-20, love.mouse.getY()-20)
-        -- proj test "A" (starts at right position, goes to the wrong one)
+
         for i,p in ipairs(projs) do
-            love.graphics.circle("fill", p.x, p.y, 3)
+            love.graphics.circle("fill", p.x, p.y, p.radius)
         end
         ------------
 
     love.graphics.pop()
     -- draw gui here
-
-    -- love.graphics.draw(sprites.crosshairs, love.mouse.getX()-20, love.mouse.getY()-20)
-    -- -- proj test (starts at wrong position goes to the right one)
-    -- for i,p in ipairs(projs) do
-    --     love.graphics.circle("fill", p.x, p.y, 3)
-    -- end
-    -- ------------
-    -- -- proj test -- this is the same as "A"
-    -- for i,p in ipairs(projs) do
-    --     love.graphics.circle("fill", p.x - dynamic.x+(screenWidth/2), p.y - dynamic.y+(screenHeight/2), 3)
-    -- end
-    -- ------------
-    ---------------------
 
     love.graphics.print("Current FPS: "..tostring(love.timer.getFPS( )), 10, 10)
 
@@ -210,23 +226,44 @@ end
 function shotProj(player)
     local proj = {}
 
-    proj.x = player.x + player.width/2 -- - player.x+(screenWidth/2)
-    proj.y = player.y + player.height/2 -- - player.y+(screenHeight/2)
+    proj.x = player.x + player.width/2
+    proj.y = player.y + player.height/2
+    proj.radius = 3
 
     proj.speed = 300
     proj.direction = playerMouseAngle(player)
     proj.dead = false
 
+    proj.source = player.id
+
     table.insert(projs, proj)
 end
 
 function playerMouseAngle(player)
-    local x = player.x + player.width/2 -- - player.x+(screenWidth/2)
-    local y = player.y + player.height/2 -- - player.x+(screenWidth/2)
+    local x = player.x + player.width/2
+    local y = player.y + player.height/2
 
-    local mX = love.mouse.getX() -- + dynamic.x+(screenWidth/2)
-    local mY = love.mouse.getY() -- + dynamic.y+(screenHeight/2)
+    local mX = love.mouse.getX()
+    local mY = love.mouse.getY()
     -- return math.atan2(y - love.mouse.getY(), x - love.mouse.getX()) + math.pi -- this is getting from PLAYER to MOUSE but rotated on 180 deg (Pi)
     return math.atan2(mY - y, mX - x) -- this is without additional rotation
+end
+
+function isCollided(o, p)
+    local pCenterX = p.x + p.radius/2
+    local pCenterY = p.y + p.radius/2
+    local res = false
+    if o.id ~= p.source then
+        res = pCenterX < o.x + o.width and
+            pCenterX > o.x and
+            pCenterY < o.y + o.height and
+            pCenterY > o.y
+        if res and (o.type == "dynamic" or o.type == "player") then
+            o:handleProj()
+        end
+    else
+        res = false
+    end
+    return res
 end
 ------------

@@ -46,6 +46,10 @@ function Dynamic:new(id, x, y, shape, width, height, baseSpeed, maxSpeed, angle,
 
     o.isMovable = false
 
+    -- proj collisions test
+    o.dead = false
+    -----------------------
+
     return o
 end
 
@@ -107,7 +111,7 @@ function Dynamic:update(dt, obstacles, direction, updateCallbacks)
         self.direction = direction
     end
 
-    print("----" .. self.id .."-----ACTION: " .. self.action .. " statusB: " .. self.statusB .. " statusL: " .. self.statusL .. " statusR: " .. self.statusR .. " statusT " .. self.statusT)
+    -- print("----" .. self.id .."-----ACTION: " .. self.action .. " statusB: " .. self.statusB .. " statusL: " .. self.statusL .. " statusR: " .. self.statusR .. " statusT " .. self.statusT)
     -- print(self.direction)
     -- print(self.isJump)
 
@@ -314,4 +318,8 @@ end
 
 function Dynamic:draw()
     love.graphics.rectangle("line", self.x, self.y, self.width, self.height)
+end
+
+function Dynamic:handleProj()
+    self.dead = true
 end
