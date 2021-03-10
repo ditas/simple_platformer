@@ -19,6 +19,8 @@ function Player:new(id, x, y, shape, width, height, baseSpeed, maxSpeed, angle, 
     o.type = "player"
     o:setIsMovable(true) -- players are movable by default
 
+    self.dead = false
+
     return o
 end
 
@@ -70,6 +72,20 @@ function Player:networkUpdate(dt)
     end
 
     return 2
+end
+
+function Player:update(dt, obstacles, direction)
+    if self.hurt == true then
+
+        self:setAnimation(3)
+
+        self.animation.currentTime = self.animation.currentTime + dt
+        if self.animation.currentTime >= self.animation.duration then
+            self.animation.currentTime = self.animation.currentTime - self.animation.duration
+            self.dead = true
+        end
+    end
+    Animation.update(self, dt, obstacles, direction, callbacks)
 end
 
 function Player:test()
@@ -133,6 +149,10 @@ function Player:handleOpponentUpdate(update)
         update[23],
         update[24]
     )
+end
+
+function Player:handleProj()
+    self.hurt = true
 end
 
 function platformToDg(platform)

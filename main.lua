@@ -51,16 +51,20 @@ function love.load()
     -- player 1
     img_right1 = love.graphics.newImage("Pink_Monster_Run_6_right.png")
     img_left1 = love.graphics.newImage("Pink_Monster_Run_6_left.png")
+    img_death1 = love.graphics.newImage("Pink_Monster_Death_8.png")
     -- player 2
     img_right2 = love.graphics.newImage("Dude_Monster_Run_6_right.png")
     img_left2 = love.graphics.newImage("Dude_Monster_Run_6_left.png")
+    img_death2 = love.graphics.newImage("Dude_Monster_Death_8.png")
 
     dynamic:addAnimation(img_right1, 32, 32, animationSpeed)
     dynamic:addAnimation(img_left1, 32, 32, animationSpeed)
+    dynamic:addAnimation(img_death1, 32, 32, animationSpeed)
     dynamic:setAnimation(1)
 
     dynamic2:addAnimation(img_right2, 32, 32, animationSpeed)
     dynamic2:addAnimation(img_left2, 32, 32, animationSpeed)
+    dynamic2:addAnimation(img_death2, 32, 32, animationSpeed)
     dynamic2:setAnimation(1)
     -----------------
 
@@ -79,6 +83,8 @@ function love.load()
         spawnObstacle(350, 350, 450, 50)
 
                 spawnObstacle(650, 650, 600, 50)
+
+    spawnObstacle(0, 1000, 5000, 50)
 
     -- network test
     dynamic:connect(address, port)
@@ -118,6 +124,7 @@ function love.update(dt)
                 end
             end
 
+            -- TODO: remove this and update in for loop below
             dynamic2:update(dt, obstacles)
             dynamic3:update(dt, obstacles)
             dynamic4:update(dt, obstacles)
@@ -140,7 +147,7 @@ function love.update(dt)
     jump = false
 
     -- proj test
-    print(#projs)
+    -- print(#projs)
 
     for i,p in ipairs(projs) do
         p.x = p.x + math.cos(p.direction) * p.speed * dt
@@ -178,11 +185,6 @@ function love.draw()
     love.graphics.translate(-dynamic.x+(screenWidth/2), -dynamic.y+(screenHeight/2))
         -- draw map here
 
-        -- dynamic:draw(true)
-        -- dynamic2:draw(true)
-        -- dynamic3:draw()
-        -- dynamic4:draw()
-        -- dynamic5:draw()
         for i,o in ipairs(obstacles) do
             if o.type == "player" then
                 o:draw(true)
@@ -202,6 +204,7 @@ function love.draw()
     -- draw gui here
 
     love.graphics.print("Current FPS: "..tostring(love.timer.getFPS( )), 10, 10)
+    love.graphics.print("Player's X: "..tostring(dynamic.x).. " Y: "..tostring(dynamic.y), 10, 30)
 
 end
 

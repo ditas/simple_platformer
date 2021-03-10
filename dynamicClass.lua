@@ -29,7 +29,7 @@ function Dynamic:new(id, x, y, shape, width, height, baseSpeed, maxSpeed, angle,
     o.time = 0
     o.fixX = 0
     o.fixY = 0
-    o.throwAngleTimeMultiplier = 1
+    o.throwAngleTimeMultiplier = 10
 
     o.statusL = 0
     o.statusT = 0
@@ -47,6 +47,7 @@ function Dynamic:new(id, x, y, shape, width, height, baseSpeed, maxSpeed, angle,
     o.isMovable = false
 
     -- proj collisions test
+    o.hurt = false
     o.dead = false
     -----------------------
 
@@ -245,10 +246,26 @@ function Dynamic:throwAngleDelta(t, callbacks)
     end
 
     self.time = self.time + t*self.throwAngleTimeMultiplier
+
+    print("--------BEFORE--------- self.throwAngleTimeMultiplier " .. self.throwAngleTimeMultiplier)
+
+    if self.throwAngleTimeMultiplier > 1 then
+        self.throwAngleTimeMultiplier = self.throwAngleTimeMultiplier - t*1.5
+    end
+
+    print("--------AFTER--------- self.throwAngleTimeMultiplier " .. self.throwAngleTimeMultiplier)
+
+    print("---------- self.time " .. self.time)
+
     local speedX = self.baseSpeed*math.cos(self.angle)*self.time
     local speedY = (self.baseSpeed*math.sin(self.angle)*self.time - (g*self.time^2)/2)
+
+    print("---------- self.baseSpeed " .. self.baseSpeed)
+    print("---------- speedX " .. speedX .. " speedY " .. speedY)
+
     self.x = self.fixX + speedX
     self.y = self.fixY - speedY
+
 end
 
 function Dynamic:throwAngle(v, alpha, throwAngleTimeMultiplier)
@@ -273,6 +290,8 @@ function Dynamic:applyAngleMovement(v, alpha, throwAngleTimeMultiplier)
     self.time = 0
     self.throwAngleTimeMultiplier = throwAngleTimeMultiplier or 10
     self.statusB = 0
+
+    print("--------INIT--------- self.throwAngleTimeMultiplier " .. self.throwAngleTimeMultiplier)
 end
 
 function Dynamic:detectCollision(obstacles)
