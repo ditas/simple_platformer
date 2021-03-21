@@ -96,6 +96,34 @@ function Player:updateOpponents(opponents)
     self.opponents = opponents or {}
 end
 
+function Player:setUpdateData(
+    x,
+    y,
+    width,
+    height,
+    baseSpeed,
+    maxSpeed,
+    action,
+    angle,
+    time,
+    fixX,
+    fixY,
+    throwAngleTimeMultiplier,
+    statusL,
+    statusT,
+    statusR,
+    statusB,
+    direction,
+
+    platform_x,
+    platform_y,
+    platform_width,
+    platform_height
+)
+    -- TODO: for some reason I can't use ":" without self here (WTF?)
+    Animation.setUpdateData(self, x, y, width, height, baseSpeed, maxSpeed, action, angle, time, fixX, fixY, throwAngleTimeMultiplier, statusL, statusT, statusR, statusB, direction, platform_x, platform_y, platform_width, platform_height)
+end
+
 function Player:handleSelfUpdate()
     local timeStamp = tostring(os.time())
     local dg = string.format("%s %d %f %f %f %f %f %f %s %f %f %f %f %f %f %f %f %f %s", 'move', timeStamp,
