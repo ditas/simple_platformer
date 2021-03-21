@@ -2,7 +2,7 @@
 -- handle id over network
 -- handle ALL dynamics updates over network (to avoid the case when it's has slightly different positions probably because of some minor coordinate difference)
 -- handle isJump over network (do I need this?)
--- handle projectiles over network
+--      handle projectiles over network
 --      remove projectiles from over the screen size
 --      screen to follow up player
 --      detect projectiles collisions
@@ -13,6 +13,9 @@
 -- network test
 local address, port = "127.0.0.1", 5555
 ---------------
+
+local id = "player1"
+local opponentId = "player2"
 
 local fixedDT = 0.01666667
 local jump = false
@@ -35,9 +38,11 @@ function love.load()
     love.window.setMode(screenWidth, screenHeight, screenFlags)
 
     require("playerNetworkClass")
-    dynamic = Player:new("player1", 1000, 0, nil, 32, 32, nil, 10)
-    dynamic2 = Player:new("player2", 1050, 0, nil, 32, 32, nil, 10)
+    -- TODO: spawn players in loop (I need number of players for match + players ids, probably I should get them from server)
+    dynamic = Player:new(id, 1000, 0, nil, 32, 32, nil, 10)
+    dynamic2 = Player:new(opponentId, 1050, 0, nil, 32, 32, nil, 10)
 
+    -- TODO: spawn dynamics in loop
     dynamic3 = Dynamic:new(3, 300, 0, nil, nil, nil, nil, 10)
     dynamic4 = Dynamic:new(4, 600, 0, nil, nil, nil, nil, 10)
     dynamic4:setIsMovable(true)
@@ -47,7 +52,7 @@ function love.load()
     require("staticClass")
     obstacles = {}
 
-    -- animation test
+    -- animation test -- TODO: load graphics in loop for the number of players availible
     -- player 1
     img_right1 = love.graphics.newImage("Pink_Monster_Run_6_right.png")
     img_left1 = love.graphics.newImage("Pink_Monster_Run_6_left.png")
@@ -76,7 +81,7 @@ function love.load()
         dynamic5
     }
 
-    -- create platforms
+    -- create platforms -- TODO: spawn in loop
     spawnObstacle(150, 150, 300, 50)
         spawnObstacle(350, 200, 300, 50)
 
@@ -85,6 +90,7 @@ function love.load()
                 spawnObstacle(650, 650, 600, 50)
 
     spawnObstacle(0, 1000, 5000, 50)
+    -------------------
 
     -- network test
     dynamic:connect(address, port)
@@ -124,18 +130,18 @@ function love.update(dt)
                 end
             end
 
-            -- TODO: remove this and update in for loop below
-            dynamic2:update(dt, obstacles)
-            shootNetworkProj(dynamic2)
-            dynamic3:update(dt, obstacles)
-            dynamic4:update(dt, obstacles)
-            dynamic5:update(dt, obstacles)
-
             for i,o in ipairs(obstacles) do
-                if o.type == "static" then
+                print(o.type)
+                if o.type == "player" and o.id ~= id then
+                    o:update(dt, obstacles)
+                    shootNetworkProj(o)
+                elseif o.type == "dynamic" then
+                    o:update(dt, obstacles)
+                elseif o.type == "static" then
                     o:update(dt)
                 end
             end
+
         end
 
     end
@@ -246,7 +252,7 @@ function shootProj(player)
 end
 
 function shootNetworkProj(player)
-    print(player.shoot)
+    -- print(player.shoot)
 
     if player.shoot then
         local proj = {}
@@ -265,7 +271,7 @@ function shootNetworkProj(player)
     end
     player.shoot = false
 
-    print(player.shoot)
+    -- print(player.shoot)
 end
 
 function playerMouseAngle(player)
