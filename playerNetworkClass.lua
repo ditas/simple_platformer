@@ -19,7 +19,11 @@ function Player:new(id, x, y, shape, width, height, baseSpeed, maxSpeed, angle, 
     o.type = "player"
     o:setIsMovable(true) -- players are movable by default
 
-    self.dead = false
+    -- self.hurt = false
+    -- self.dead = false
+    self.shoot = false
+    self.projAngle = 0
+    self.projStartCoords = {0, 0}
 
     return o
 end
@@ -74,6 +78,130 @@ function Player:networkUpdate(dt)
     return 2
 end
 
+-- function Player:setUpdateData(
+--     x,
+--     y,
+--     width,
+--     height,
+--     baseSpeed,
+--     maxSpeed,
+--     action,
+--     angle,
+--     time,
+--     fixX,
+--     fixY,
+--     throwAngleTimeMultiplier,
+--     statusL,
+--     statusT,
+--     statusR,
+--     statusB,
+--     direction,
+--     hurt,
+--     dead,
+--
+--     shoot,
+--     projAngle,
+--     projStartCoordsX,
+--     projStartCoordsY,
+--
+--     platform_x,
+--     platform_y,
+--     platform_width,
+--     platform_height
+-- )
+--     self.x = tonumber(x)
+--     self.y = tonumber(y)
+--     self.width = tonumber(width)
+--     self.height = tonumber(height)
+--     self.baseSpeed = tonumber(baseSpeed)
+--     self.maxSpeed = tonumber(maxSpeed)
+--     self.action = action
+--     self.angle = tonumber(angle)
+--     self.time = tonumber(time)
+--     self.fixX = tonumber(fixX)
+--     self.fixY = tonumber(fixY)
+--     self.throwAngleTimeMultiplier = tonumber(throwAngleTimeMultiplier)
+--     self.statusL = tonumber(statusL)
+--     self.statusT = tonumber(statusT)
+--     self.statusR = tonumber(statusR)
+--     self.statusB = tonumber(statusB)
+--     self.direction = direction
+--     self.hurt = numToBool(tonumber(hurt))
+--     self.dead = numToBool(tonumber(dead))
+--
+--     self.shoot = numToBool(tonumber(shoot))
+--     self.projAngle = tonumber(projAngle)
+--     self.projStartCoords = {tonumber(projStartCoordsX), tonumber(projStartCoordsY)}
+--
+--     self.platform.x = tonumber(platform_x)
+--     self.platform.y = tonumber(platform_y)
+--     self.platform.width = tonumber(platform_width)
+--     self.platform.height = tonumber(platform_height)
+-- end
+
+function Player:setUpdateData(
+    x,
+    y,
+    width,
+    height,
+    baseSpeed,
+    maxSpeed,
+    action,
+    angle,
+    time,
+    fixX,
+    fixY,
+    throwAngleTimeMultiplier,
+    statusL,
+    statusT,
+    statusR,
+    statusB,
+    direction,
+    hurt,
+    dead,
+
+    shoot,
+    projAngle,
+    projStartCoordsX,
+    projStartCoordsY,
+
+    platform_x,
+    platform_y,
+    platform_width,
+    platform_height
+)
+    Animation.setUpdateData(self,
+        x,
+        y,
+        width,
+        height,
+        baseSpeed,
+        maxSpeed,
+        action,
+        angle,
+        time,
+        fixX,
+        fixY,
+        throwAngleTimeMultiplier,
+        statusL,
+        statusT,
+        statusR,
+        statusB,
+        direction,
+        hurt,
+        dead,
+
+        platform_x,
+        platform_y,
+        platform_width,
+        platform_height
+    )
+
+    self.shoot = numToBool(tonumber(shoot))
+    self.projAngle = tonumber(projAngle)
+    self.projStartCoords = {tonumber(projStartCoordsX), tonumber(projStartCoordsY)}
+end
+
 function Player:update(dt, obstacles, direction)
     if self.hurt == true then
 
@@ -92,14 +220,20 @@ function Player:test()
     print("player network test")
 end
 
+function Player:storeProj(angle, x, y)
+    self.shoot = true
+    self.projAngle = angle
+    self.projStartCoords = {x, y}
+end
+
 function Player:updateOpponents(opponents)
     self.opponents = opponents or {}
 end
 
 function Player:handleSelfUpdate()
     local timeStamp = tostring(os.time())
-    local dg = string.format("%s %d %f %f %f %f %f %f %s %f %f %f %f %f %f %f %f %f %s", 'move', timeStamp,
-        -- self.id, -- TODO: handle me
+    local dg = string.format("%s %d %s %f %f %f %f %f %f %s %f %f %f %f %f %f %f %f %f %s %f %f %f %f %f %f", 'move', timeStamp,
+        self.id,
         self.x,
         self.y,
         self.width,
@@ -116,38 +250,57 @@ function Player:handleSelfUpdate()
         self.statusT,
         self.statusR,
         self.statusB,
-        self.direction
+        self.direction,
+
+        boolToNum(self.hurt),
+        boolToNum(self.dead),
+
+        boolToNum(self.shoot),
+        self.projAngle,
+        self.projStartCoords[1],
+        self.projStartCoords[2]
     )
     dg = dg .. platformToDg(self.platform)
     self.client:send(dg)
     self.t = self.t - self.updateRate
+
+    self.shoot = false
 end
 
 function Player:handleOpponentUpdate(update)
     self.opponents[1]:setUpdateData(
-        update[3],
-        update[4],
-        update[5],
-        update[6],
-        update[7],
-        update[8],
-        update[9],
-        update[10],
-        update[11],
-        update[12],
-        update[13],
-        update[14],
-        update[15],
-        update[16],
-        update[17],
-        update[18],
-        update[19],
-        update[20],
+        -- update[3], -- self.id,
+        update[4], -- self.x,
+        update[5], -- self.y,
+        update[6],  -- self.width,
+        update[7], -- self.height,
+        update[8], -- self.baseSpeed,
+        update[9], -- self.maxSpeed,
+        update[10], -- self.action,
+        update[11], -- self.angle,
+        update[12], -- self.time,
+        update[13], -- self.fixX,
+        update[14], -- self.fixY,
+        update[15], -- self.throwAngleTimeMultiplier,
+        update[16], -- self.statusL,
+        update[17], -- self.statusT,
+        update[18], -- self.statusR,
+        update[19], -- self.statusB,
+        update[20], -- self.direction,
+        update[21], -- self.hurt
+        update[22], -- self.dead
 
-        update[21],
-        update[22],
-        update[23],
-        update[24]
+        -- proj
+        update[23], -- self.shoot
+        update[24], -- self.projAngle
+        update[25], -- self.projStartCoords[1],
+        update[26], -- self.projStartCoords[2]
+
+        -- platform
+        update[27],
+        update[28],
+        update[29],
+        update[30]
     )
 end
 
@@ -164,4 +317,12 @@ function platformToDg(platform)
         string = string .. string.format(" %f", platform.height)
     end
     return string
+end
+
+function boolToNum(bool)
+    return bool and 1 or 0
+end
+
+function numToBool(num)
+    return num > 0
 end

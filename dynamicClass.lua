@@ -76,6 +76,8 @@ function Dynamic:setUpdateData(
     statusR,
     statusB,
     direction,
+    hurt,
+    dead,
 
     platform_x,
     platform_y,
@@ -99,6 +101,8 @@ function Dynamic:setUpdateData(
     self.statusR = tonumber(statusR)
     self.statusB = tonumber(statusB)
     self.direction = direction
+    self.hurt = numToBool(hurt)
+    self.dead = numToBool(dead)
 
     self.platform.x = tonumber(platform_x)
     self.platform.y = tonumber(platform_y)
@@ -341,4 +345,8 @@ end
 
 function Dynamic:handleProj()
     self.dead = true
+end
+
+function numToBool(num)
+    return num > 0
 end
