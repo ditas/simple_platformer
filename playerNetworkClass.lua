@@ -21,7 +21,17 @@ function Player:new(id, x, y, shape, width, height, baseSpeed, maxSpeed, angle, 
 
     self.dead = false
 
+    self.shoot = false
+    self.projAngle = 0
+    self.projStartCoords = {0, 0}
+
     return o
+end
+
+function Player:storeProj(angle, x, y)
+    self.shoot = true
+    self.projAngle = angle
+    self.projStartCoords = {x, y}
 end
 
 function Player:connect(address, port)
@@ -115,18 +125,28 @@ function Player:setUpdateData(
     statusB,
     direction,
 
+    shoot,
+    projAngle,
+    projStartCoordsX,
+    projStartCoordsY,
+
     platform_x,
     platform_y,
     platform_width,
     platform_height
 )
+
+    self.shoot = numToBool(tonumber(shoot))
+    self.projAngle = tonumber(projAngle)
+    self.projStartCoords = {tonumber(projStartCoordsX), tonumber(projStartCoordsY)}
+
     -- TODO: for some reason I can't use ":" without self here (WTF?)
     Animation.setUpdateData(self, x, y, width, height, baseSpeed, maxSpeed, action, angle, time, fixX, fixY, throwAngleTimeMultiplier, statusL, statusT, statusR, statusB, direction, platform_x, platform_y, platform_width, platform_height)
 end
 
 function Player:handleSelfUpdate()
     local timeStamp = tostring(os.time())
-    local dg = string.format("%s %d %f %f %f %f %f %f %s %f %f %f %f %f %f %f %f %f %s", 'move', timeStamp,
+    local dg = string.format("%s %d %f %f %f %f %f %f %s %f %f %f %f %f %f %f %f %f %s %f %f %f %f", 'move', timeStamp,
         -- self.id, -- TODO: handle me
         self.x,
         self.y,
@@ -144,11 +164,18 @@ function Player:handleSelfUpdate()
         self.statusT,
         self.statusR,
         self.statusB,
-        self.direction
+        self.direction,
+
+        boolToNum(self.shoot),
+        self.projAngle,
+        self.projStartCoords[1],
+        self.projStartCoords[2]
     )
     dg = dg .. platformToDg(self.platform)
     self.client:send(dg)
     self.t = self.t - self.updateRate
+
+    self.shoot = false
 end
 
 function Player:handleOpponentUpdate(update)
@@ -175,7 +202,12 @@ function Player:handleOpponentUpdate(update)
         update[21],
         update[22],
         update[23],
-        update[24]
+        update[24],
+
+        update[25],
+        update[26],
+        update[27],
+        update[28]
     )
 end
 
@@ -192,4 +224,12 @@ function platformToDg(platform)
         string = string .. string.format(" %f", platform.height)
     end
     return string
+end
+
+function boolToNum(bool)
+    return bool and 1 or 0
+end
+
+function numToBool(num)
+    return num > 0
 end

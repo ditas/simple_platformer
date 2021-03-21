@@ -126,6 +126,7 @@ function love.update(dt)
 
             -- TODO: remove this and update in for loop below
             dynamic2:update(dt, obstacles)
+            shootNetworkProj(dynamic2)
             dynamic3:update(dt, obstacles)
             dynamic4:update(dt, obstacles)
             dynamic5:update(dt, obstacles)
@@ -222,11 +223,11 @@ end
 -- proj test
 function love.mousepressed(x, y, button, istouch, presses)
     if button == 1 and gameState == 2 then
-        shotProj(dynamic)
+        shootProj(dynamic)
     end
 end
 
-function shotProj(player)
+function shootProj(player)
     local proj = {}
 
     proj.x = player.x + player.width/2
@@ -239,7 +240,32 @@ function shotProj(player)
 
     proj.source = player.id
 
+    player:storeProj(proj.direction, proj.x, proj.y)
+
     table.insert(projs, proj)
+end
+
+function shootNetworkProj(player)
+    print(player.shoot)
+
+    if player.shoot then
+        local proj = {}
+
+        proj.x = player.projStartCoords[1]
+        proj.y = player.projStartCoords[2]
+        proj.radius = 3
+
+        proj.speed = 300
+        proj.direction = player.projAngle
+        proj.dead = false
+
+        proj.source = player.id
+
+        table.insert(projs, proj)
+    end
+    player.shoot = false
+
+    print(player.shoot)
 end
 
 function playerMouseAngle(player)
