@@ -60,28 +60,32 @@ function Player:connect(address, port)
 end
 
 function Player:networkUpdate(dt)
-    self.t = self.t + dt
+    if not self.dead then
+        self.t = self.t + dt
 
-    if not self.client then
-        data, from_ip, from_port = self.udp:receivefrom()
+        if not self.client then
+            data, from_ip, from_port = self.udp:receivefrom()
 
-        self.udp:setpeername(from_ip, from_port)
-        self.client = self.udp
-        self.client:settimeout(0)
-    elseif self.t > self.updateRate then
-        self:handleSelfUpdate()
-    else
-        local update = self.client:receive()
-        local opponentUpdate = {}
-        if update then
-            for w in update:gmatch("%S+") do
-                table.insert(opponentUpdate, w)
+            self.udp:setpeername(from_ip, from_port)
+            self.client = self.udp
+            self.client:settimeout(0)
+        elseif self.t > self.updateRate then
+            self:handleSelfUpdate()
+        else
+            local update = self.client:receive()
+            local opponentUpdate = {}
+            if update then
+                for w in update:gmatch("%S+") do
+                    table.insert(opponentUpdate, w)
+                end
+                self:handleOpponentUpdate(opponentUpdate)
             end
-            self:handleOpponentUpdate(opponentUpdate)
         end
-    end
 
-    return 2
+        return 2
+    else
+        return 1
+    end
 end
 
 function Player:update(dt, obstacles, direction)
