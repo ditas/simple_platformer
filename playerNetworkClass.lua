@@ -20,7 +20,7 @@ function Player:new(id, x, y, shape, width, height, baseSpeed, maxSpeed, angle, 
     o.type = "player"
     o:setIsMovable(true) -- players are movable by default
 
-    self.dead = false
+    self.isHurt = false
 
     self.shoot = false
     self.projAngle = 0
@@ -61,13 +61,13 @@ function Player:connect(address, port)
 end
 
 function Player:networkUpdate(dt)
-    if not self.dead then
+    if not self.isDead then
         self.t = self.t + dt
 
         if not self.client then
-            data, from_ip, from_port = self.udp:receivefrom()
+            data, fromIp, fromPort = self.udp:receivefrom()
 
-            self.udp:setpeername(from_ip, from_port)
+            self.udp:setpeername(fromIp, fromPort)
             self.client = self.udp
             self.client:settimeout(0)
         elseif self.t > self.updateRate then
@@ -90,14 +90,14 @@ function Player:networkUpdate(dt)
 end
 
 function Player:update(dt, obstacles, direction)
-    if self.hurt == true then
+    if self.isHurt == true then
 
         self:setAnimation(3)
 
         self.animation.currentTime = self.animation.currentTime + dt
         if self.animation.currentTime >= self.animation.duration then
             self.animation.currentTime = self.animation.currentTime - self.animation.duration
-            self.dead = true
+            self.isDead = true
         end
     end
     Animation.update(self, dt, obstacles, direction, callbacks)
@@ -136,10 +136,10 @@ function Player:setUpdateData(
     projStartCoordsX,
     projStartCoordsY,
 
-    platform_x,
-    platform_y,
-    platform_width,
-    platform_height
+    platformX,
+    platformY,
+    platformWidth,
+    platformHeight
 )
 
     self.shoot = numToBool(tonumber(shoot))
@@ -147,7 +147,7 @@ function Player:setUpdateData(
     self.projStartCoords = {tonumber(projStartCoordsX), tonumber(projStartCoordsY)}
 
     -- TODO: for some reason I can't use ":" without self here (WTF?)
-    Animation.setUpdateData(self, x, y, width, height, baseSpeed, maxSpeed, action, angle, time, fixX, fixY, throwAngleTimeMultiplier, statusL, statusT, statusR, statusB, direction, isJump, platform_x, platform_y, platform_width, platform_height)
+    Animation.setUpdateData(self, x, y, width, height, baseSpeed, maxSpeed, action, angle, time, fixX, fixY, throwAngleTimeMultiplier, statusL, statusT, statusR, statusB, direction, isJump, platformX, platformY, platformWidth, platformHeight)
 end
 
 function Player:handleSelfUpdate()
@@ -220,7 +220,7 @@ function Player:handleOpponentUpdate(update)
 end
 
 function Player:handleProj()
-    self.hurt = true
+    self.isHurt = true
 end
 
 function platformToDg(platform)

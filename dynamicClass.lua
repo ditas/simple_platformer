@@ -49,8 +49,7 @@ function Dynamic:new(id, x, y, shape, width, height, baseSpeed, maxSpeed, angle,
     o.isMovable = false
 
     -- proj collisions test
-    o.hurt = false
-    o.dead = false
+    o.isDead = false
     -----------------------
 
     return o
@@ -80,10 +79,10 @@ function Dynamic:setUpdateData(
     direction,
     isJump,
 
-    platform_x,
-    platform_y,
-    platform_width,
-    platform_height
+    platformX,
+    platformY,
+    platformWidth,
+    platformHeight
 )
     self.x = tonumber(x)
     self.y = tonumber(y)
@@ -104,10 +103,10 @@ function Dynamic:setUpdateData(
     self.direction = direction
     self.isJump = numToBool(tonumber(isJump))
 
-    self.platform.x = tonumber(platform_x)
-    self.platform.y = tonumber(platform_y)
-    self.platform.width = tonumber(platform_width)
-    self.platform.height = tonumber(platform_height)
+    self.platform.x = tonumber(platformX)
+    self.platform.y = tonumber(platformY)
+    self.platform.width = tonumber(platformWidth)
+    self.platform.height = tonumber(platformHeight)
 end
 
 function Dynamic:update(dt, obstacles, direction, updateCallbacks)
@@ -344,5 +343,5 @@ function Dynamic:draw()
 end
 
 function Dynamic:handleProj()
-    self.dead = true
+    self.isDead = true
 end

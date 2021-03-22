@@ -54,22 +54,22 @@ function love.load()
 
     -- animation test -- TODO: load graphics in loop for the number of players availible
     -- player 1
-    img_right1 = love.graphics.newImage("Pink_Monster_Run_6_right.png")
-    img_left1 = love.graphics.newImage("Pink_Monster_Run_6_left.png")
-    img_death1 = love.graphics.newImage("Pink_Monster_Death_8.png")
+    imgRight1 = love.graphics.newImage("Pink_Monster_Run_6_right.png")
+    imgLeft1 = love.graphics.newImage("Pink_Monster_Run_6_left.png")
+    imgDeath1 = love.graphics.newImage("Pink_Monster_Death_8.png")
     -- player 2
-    img_right2 = love.graphics.newImage("Dude_Monster_Run_6_right.png")
-    img_left2 = love.graphics.newImage("Dude_Monster_Run_6_left.png")
-    img_death2 = love.graphics.newImage("Dude_Monster_Death_8.png")
+    imgRight2 = love.graphics.newImage("Dude_Monster_Run_6_right.png")
+    imgLeft2 = love.graphics.newImage("Dude_Monster_Run_6_left.png")
+    imgDeath2 = love.graphics.newImage("Dude_Monster_Death_8.png")
 
-    dynamic:addAnimation(img_right1, 32, 32, animationSpeed)
-    dynamic:addAnimation(img_left1, 32, 32, animationSpeed)
-    dynamic:addAnimation(img_death1, 32, 32, animationSpeed)
+    dynamic:addAnimation(imgRight1, 32, 32, animationSpeed)
+    dynamic:addAnimation(imgLeft1, 32, 32, animationSpeed)
+    dynamic:addAnimation(imgDeath1, 32, 32, animationSpeed)
     dynamic:setAnimation(1)
 
-    dynamic2:addAnimation(img_right2, 32, 32, animationSpeed)
-    dynamic2:addAnimation(img_left2, 32, 32, animationSpeed)
-    dynamic2:addAnimation(img_death2, 32, 32, animationSpeed)
+    dynamic2:addAnimation(imgRight2, 32, 32, animationSpeed)
+    dynamic2:addAnimation(imgLeft2, 32, 32, animationSpeed)
+    dynamic2:addAnimation(imgDeath2, 32, 32, animationSpeed)
     dynamic2:setAnimation(1)
     -----------------
 
@@ -163,7 +163,7 @@ function love.update(dt)
 
     for i=#projs, 1, -1 do
         local p = projs[i]
-        if p.x > love.graphics.getWidth() + screenWidth/2 or p.x < 0 - screenWidth/2 or p.y > love.graphics.getHeight() + screenHeight/2 or p.y < 0 - screenHeight/2 or p.dead == true then
+        if p.x > love.graphics.getWidth() + screenWidth/2 or p.x < 0 - screenWidth/2 or p.y > love.graphics.getHeight() + screenHeight/2 or p.y < 0 - screenHeight/2 or p.isDead == true then
             table.remove(projs, i)
         end
     end
@@ -171,14 +171,14 @@ function love.update(dt)
     for i,o in ipairs(obstacles) do
         for n,p in ipairs(projs) do
             if isCollided(o, p) then
-                p.dead = true
+                p.isDead = true
             end
         end
     end
 
     for i=#obstacles, 1, -1 do
         local o = obstacles[i]
-        if o.dead == true then
+        if o.isDead == true then
             table.remove(obstacles, i)
         end
     end
@@ -242,7 +242,7 @@ function shootProj(player)
 
     proj.speed = 300
     proj.direction = playerMouseAngle(player)
-    proj.dead = false
+    proj.isDead = false
 
     proj.source = player.id
 
@@ -263,7 +263,7 @@ function shootNetworkProj(player)
 
         proj.speed = 300
         proj.direction = player.projAngle
-        proj.dead = false
+        proj.isDead = false
 
         proj.source = player.id
 
