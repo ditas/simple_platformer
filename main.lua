@@ -147,7 +147,9 @@ function love.update(dt)
     end
 
     -- network test
-    dynamic:updateOpponents({dynamic2})
+    local opponents = {}
+    opponents[dynamic2.id] = dynamic2
+    dynamic:updateOpponents(opponents)
     gameState = dynamic:networkUpdate(dt)
     ---------------
 

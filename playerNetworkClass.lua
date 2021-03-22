@@ -186,7 +186,7 @@ function Player:handleSelfUpdate()
 end
 
 function Player:handleOpponentUpdate(update)
-    self.opponents[1]:setUpdateData(
+    self.opponents[update[2]]:setUpdateData(
         update[3],
         update[4],
         update[5],
