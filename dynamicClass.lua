@@ -2,6 +2,8 @@ local g = 10
 local tick = 1/60
 local runSpeed = 120 -- this is max, don't use more as it could fail on collisions when pushing 2+ objects
 
+require("common")
+
 Dynamic = {}
 
 function Dynamic:new(id, x, y, shape, width, height, baseSpeed, maxSpeed, angle, action, obstacles)
@@ -76,6 +78,7 @@ function Dynamic:setUpdateData(
     statusR,
     statusB,
     direction,
+    isJump,
 
     platform_x,
     platform_y,
@@ -99,6 +102,7 @@ function Dynamic:setUpdateData(
     self.statusR = tonumber(statusR)
     self.statusB = tonumber(statusB)
     self.direction = direction
+    self.isJump = numToBool(tonumber(isJump))
 
     self.platform.x = tonumber(platform_x)
     self.platform.y = tonumber(platform_y)

@@ -1,4 +1,5 @@
 require("animationDynamicClass")
+require("common")
 
 Player = Animation:new()
 
@@ -128,6 +129,7 @@ function Player:setUpdateData(
     statusR,
     statusB,
     direction,
+    isJump,
 
     shoot,
     projAngle,
@@ -145,12 +147,12 @@ function Player:setUpdateData(
     self.projStartCoords = {tonumber(projStartCoordsX), tonumber(projStartCoordsY)}
 
     -- TODO: for some reason I can't use ":" without self here (WTF?)
-    Animation.setUpdateData(self, x, y, width, height, baseSpeed, maxSpeed, action, angle, time, fixX, fixY, throwAngleTimeMultiplier, statusL, statusT, statusR, statusB, direction, platform_x, platform_y, platform_width, platform_height)
+    Animation.setUpdateData(self, x, y, width, height, baseSpeed, maxSpeed, action, angle, time, fixX, fixY, throwAngleTimeMultiplier, statusL, statusT, statusR, statusB, direction, isJump, platform_x, platform_y, platform_width, platform_height)
 end
 
 function Player:handleSelfUpdate()
     local timeStamp = tostring(os.time())
-    local dg = string.format("%s %d %f %f %f %f %f %f %s %f %f %f %f %f %f %f %f %f %s %f %f %f %f", 'move', timeStamp,
+    local dg = string.format("%s %d %f %f %f %f %f %f %s %f %f %f %f %f %f %f %f %f %s %f %f %f %f %f", 'move', timeStamp,
         -- self.id, -- TODO: handle me
         self.x,
         self.y,
@@ -169,6 +171,7 @@ function Player:handleSelfUpdate()
         self.statusR,
         self.statusB,
         self.direction,
+        boolToNum(self.isJump),
 
         boolToNum(self.shoot),
         self.projAngle,
@@ -202,16 +205,17 @@ function Player:handleOpponentUpdate(update)
         update[18],
         update[19],
         update[20],
-
         update[21],
+
         update[22],
         update[23],
         update[24],
-
         update[25],
+
         update[26],
         update[27],
-        update[28]
+        update[28],
+        update[29]
     )
 end
 
@@ -228,12 +232,4 @@ function platformToDg(platform)
         string = string .. string.format(" %f", platform.height)
     end
     return string
-end
-
-function boolToNum(bool)
-    return bool and 1 or 0
-end
-
-function numToBool(num)
-    return num > 0
 end
