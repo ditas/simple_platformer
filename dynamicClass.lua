@@ -1,5 +1,8 @@
 local g = 10
 local tick = 1/60
+local runSpeed = 120 -- this is max, don't use more as it could fail on collisions when pushing 2+ objects
+
+require("common")
 
 Dynamic = {}
 
@@ -28,7 +31,7 @@ function Dynamic:new(id, x, y, shape, width, height, baseSpeed, maxSpeed, angle,
     o.time = 0
     o.fixX = 0
     o.fixY = 0
-    o.throwAngleTimeMultiplier = 1
+    o.throwAngleTimeMultiplier = 10
 
     o.statusL = 0
     o.statusT = 0
@@ -41,7 +44,19 @@ function Dynamic:new(id, x, y, shape, width, height, baseSpeed, maxSpeed, angle,
 
     o.direction = nil
 
+    o.isJump = false
+
+    o.isMovable = false
+
+    -- proj collisions test
+    o.isDead = false
+    -----------------------
+
     return o
+end
+
+function Dynamic:setIsMovable(isMovable)
+    self.isMovable = isMovable
 end
 
 function Dynamic:setUpdateData(
@@ -62,11 +77,12 @@ function Dynamic:setUpdateData(
     statusR,
     statusB,
     direction,
+    isJump,
 
-    platform_x,
-    platform_y,
-    platform_width,
-    platform_height
+    platformX,
+    platformY,
+    platformWidth,
+    platformHeight
 )
     self.x = tonumber(x)
     self.y = tonumber(y)
@@ -85,11 +101,12 @@ function Dynamic:setUpdateData(
     self.statusR = tonumber(statusR)
     self.statusB = tonumber(statusB)
     self.direction = direction
+    self.isJump = numToBool(tonumber(isJump))
 
-    self.platform.x = tonumber(platform_x)
-    self.platform.y = tonumber(platform_y)
-    self.platform.width = tonumber(platform_width)
-    self.platform.height = tonumber(platform_height)
+    self.platform.x = tonumber(platformX)
+    self.platform.y = tonumber(platformY)
+    self.platform.width = tonumber(platformWidth)
+    self.platform.height = tonumber(platformHeight)
 end
 
 function Dynamic:update(dt, obstacles, direction, updateCallbacks)
@@ -98,26 +115,28 @@ function Dynamic:update(dt, obstacles, direction, updateCallbacks)
         self.direction = direction
     end
 
-    -- print("----" .. self.id .."-----ACTION: " .. self.action .. " DIR: " .. direction .. " statusB: " .. self.statusB .. " statusL: " .. self.statusL .. " statusR: " .. self.statusR)
+    -- print("----" .. self.id .."-----ACTION: " .. self.action .. " statusB: " .. self.statusB .. " statusL: " .. self.statusL .. " statusR: " .. self.statusR .. " statusT " .. self.statusT)
+    -- print(self.direction)
+    -- print(self.isJump)
 
     -- stuck prevention
-    if self.statusB == 1 and self.statusL == 1 then
-        self.x = self.x + 1
-        self.y = self.y - 0.5
-        self.statusL = 0
-    end
+    if self.isMovable then
+        if self.statusB == 1 and self.statusL == 1 then
+            self.x = self.x + 1
+            self.y = self.y - 0.5
+        end
 
-    if self.statusB == 1 and self.statusR == 1 then
-        self.x = self.x - 1
-        self.y = self.y - 0.5
-        self.statusR = 0
-    end
+        if self.statusB == 1 and self.statusR == 1 then
+            self.x = self.x - 1
+            self.y = self.y - 0.5
+        end
 
-    if self.statusB == 1
-        and self.platform.y ~= nil
-    then
-        if self.y + self.height + 7.5 > self.platform.y then
-            self.y = self.y - 0.1
+        if self.statusB == 1
+            and self.platform.y ~= nil
+        then
+            if self.y + self.height + 7.5 > self.platform.y then
+                self.y = self.y - 0.1
+            end
         end
     end
     -------------------
@@ -128,11 +147,11 @@ function Dynamic:update(dt, obstacles, direction, updateCallbacks)
             (self.platform.x + 7.5 < self.x + self.width and self.platform.x + self.platform.width - 7.5 > self.x)
         then
             if self.direction == "left" and self.statusL ~= 1 then
-                self.x = self.x - 100 * dt
+                self.x = self.x - runSpeed * dt
                 self.statusR = 0
                 updateCallbacks[self.direction](self, dt)
             elseif self.direction == "right" and self.statusR ~= 1 then
-                self.x = self.x + 100 * dt
+                self.x = self.x + runSpeed * dt
                 self.statusL = 0
                 updateCallbacks[self.direction](self, dt)
             end
@@ -188,6 +207,7 @@ function Dynamic:update(dt, obstacles, direction, updateCallbacks)
 end
 
 function Dynamic:freeFallDelta(t)
+    self.isJump = false
     if self.baseSpeed < self.maxSpeed then
         speed = self.baseSpeed + g*t
         self.y = self.y + speed
@@ -209,6 +229,7 @@ function Dynamic:throwUpDelta(t)
 end
 
 function Dynamic:throwUp(v)
+    self.isJump = true
     if self.action ~= "topBlocked" then
         self.baseSpeed = v
         self.action = "throwUp"
@@ -228,13 +249,30 @@ function Dynamic:throwAngleDelta(t, callbacks)
     end
 
     self.time = self.time + t*self.throwAngleTimeMultiplier
+
+    -- print("--------BEFORE--------- self.throwAngleTimeMultiplier " .. self.throwAngleTimeMultiplier)
+
+    if self.throwAngleTimeMultiplier > 1 then
+        self.throwAngleTimeMultiplier = self.throwAngleTimeMultiplier - t*1.5
+    end
+
+    -- print("--------AFTER--------- self.throwAngleTimeMultiplier " .. self.throwAngleTimeMultiplier)
+
+    -- print("---------- self.time " .. self.time)
+
     local speedX = self.baseSpeed*math.cos(self.angle)*self.time
     local speedY = (self.baseSpeed*math.sin(self.angle)*self.time - (g*self.time^2)/2)
+
+    -- print("---------- self.baseSpeed " .. self.baseSpeed)
+    -- print("---------- speedX " .. speedX .. " speedY " .. speedY)
+
     self.x = self.fixX + speedX
     self.y = self.fixY - speedY
+
 end
 
 function Dynamic:throwAngle(v, alpha, throwAngleTimeMultiplier)
+    self.isJump = true
     if self.action ~= "topBlocked" then
         if alpha < 90 and self.statusR ~= 1 and self.action ~= "rightBlocked" then
             self:applyAngleMovement(v, alpha, throwAngleTimeMultiplier)
@@ -255,6 +293,8 @@ function Dynamic:applyAngleMovement(v, alpha, throwAngleTimeMultiplier)
     self.time = 0
     self.throwAngleTimeMultiplier = throwAngleTimeMultiplier or 10
     self.statusB = 0
+
+    -- print("--------INIT--------- self.throwAngleTimeMultiplier " .. self.throwAngleTimeMultiplier)
 end
 
 function Dynamic:detectCollision(obstacles)
@@ -283,6 +323,8 @@ function Dynamic:detectCollision(obstacles)
                     self.statusB = 1
                     self.action = "stop"
 
+                    self.isJump = false
+
                     self.platform.x = o.x
                     self.platform.y = o.y
                     self.platform.width = o.width
@@ -298,4 +340,8 @@ end
 
 function Dynamic:draw()
     love.graphics.rectangle("line", self.x, self.y, self.width, self.height)
+end
+
+function Dynamic:handleProj()
+    self.isDead = true
 end

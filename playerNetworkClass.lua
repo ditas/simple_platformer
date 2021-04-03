@@ -1,4 +1,5 @@
 require("animationDynamicClass")
+require("common")
 
 Player = Animation:new()
 
@@ -16,7 +17,22 @@ function Player:new(id, x, y, shape, width, height, baseSpeed, maxSpeed, angle, 
     self.updateRate = 0.1
     self.t = 0
 
+    o.type = "player"
+    o:setIsMovable(true) -- players are movable by default
+
+    self.isHurt = false
+
+    self.shoot = false
+    self.projAngle = 0
+    self.projStartCoords = {0, 0}
+
     return o
+end
+
+function Player:storeProj(angle, x, y)
+    self.shoot = true
+    self.projAngle = angle
+    self.projStartCoords = {x, y}
 end
 
 function Player:connect(address, port)
@@ -31,10 +47,12 @@ function Player:connect(address, port)
 
     local udp = self.socket.udp()
     udp:settimeout(5)
+
     if osString == "Linux" then
-        local ip = assert(self.socket.dns.toip(self.address))
+        -- local ip = assert(self.socket.dns.toip(self.address)) -- TODO: this is not needed for non localhost ip! WTF?
         udp:setsockname("*", 0) -- bind on any availible port and local(?) ip address.
-        udp:sendto(dg, ip, self.port)
+        -- udp:sendto(dg, ip, self.port)
+        udp:sendto(dg, self.address, self.port)
     else
         udp:setpeername(self.address, self.port)
         udp:send(dg)
@@ -45,28 +63,54 @@ function Player:connect(address, port)
 end
 
 function Player:networkUpdate(dt)
-    self.t = self.t + dt
+    if not self.isDead then
+        self.t = self.t + dt
 
-    if not self.client then
-        data, from_ip, from_port = self.udp:receivefrom()
+        if not self.client then
+            data, fromIp, fromPort = self.udp:receivefrom()
 
-        self.udp:setpeername(from_ip, from_port)
-        self.client = self.udp
-        self.client:settimeout(0)
-    elseif self.t > self.updateRate then
-        self:handleSelfUpdate()
-    else
-        local update = self.client:receive()
-        local opponentUpdate = {}
-        if update then
-            for w in update:gmatch("%S+") do
-                table.insert(opponentUpdate, w)
+            self.udp:setpeername(fromIp, fromPort)
+            self.client = self.udp
+            self.client:settimeout(0)
+        elseif self.t > self.updateRate then
+            self:handleSelfUpdate()
+        else
+            local update = self.client:receive()
+            local opponentUpdate = {}
+            if update then
+                for w in update:gmatch("%S+") do
+                    table.insert(opponentUpdate, w)
+                end
+                self:handleOpponentUpdate(opponentUpdate)
             end
-            self:handleOpponentUpdate(opponentUpdate)
+        end
+
+        return 2
+    else
+        return 1
+    end
+end
+
+function Player:update(dt, obstacles, direction)
+    -- if self.statusB == 1
+    --     and self.platform.y ~= nil
+    -- then
+    --     if self.y + self.height + 7.5 > self.platform.y then
+    --         self.y = self.y - 0.1
+    --     end
+    -- end
+
+    if self.isHurt == true then
+
+        self:setAnimation(3)
+
+        self.animation.currentTime = self.animation.currentTime + dt
+        if self.animation.currentTime >= self.animation.duration then
+            self.animation.currentTime = self.animation.currentTime - self.animation.duration
+            self.isDead = true
         end
     end
-
-    return 2
+    Animation.update(self, dt, obstacles, direction, callbacks)
 end
 
 function Player:test()
@@ -77,9 +121,48 @@ function Player:updateOpponents(opponents)
     self.opponents = opponents or {}
 end
 
+function Player:setUpdateData(
+    x,
+    y,
+    width,
+    height,
+    baseSpeed,
+    maxSpeed,
+    action,
+    angle,
+    time,
+    fixX,
+    fixY,
+    throwAngleTimeMultiplier,
+    statusL,
+    statusT,
+    statusR,
+    statusB,
+    direction,
+    isJump,
+
+    shoot,
+    projAngle,
+    projStartCoordsX,
+    projStartCoordsY,
+
+    platformX,
+    platformY,
+    platformWidth,
+    platformHeight
+)
+
+    self.shoot = numToBool(tonumber(shoot))
+    self.projAngle = tonumber(projAngle)
+    self.projStartCoords = {tonumber(projStartCoordsX), tonumber(projStartCoordsY)}
+
+    -- TODO: for some reason I can't use ":" without self here (WTF?)
+    Animation.setUpdateData(self, x, y, width, height, baseSpeed, maxSpeed, action, angle, time, fixX, fixY, throwAngleTimeMultiplier, statusL, statusT, statusR, statusB, direction, isJump, platformX, platformY, platformWidth, platformHeight)
+end
+
 function Player:handleSelfUpdate()
     local timeStamp = tostring(os.time())
-    local dg = string.format("%s %d %f %f %f %f %f %f %s %f %f %f %f %f %f %f %f %f %s", 'move', timeStamp,
+    local dg = string.format("%s %d %f %f %f %f %f %f %s %f %f %f %f %f %f %f %f %f %s %f %f %f %f %f", 'move', timeStamp,
         -- self.id, -- TODO: handle me
         self.x,
         self.y,
@@ -97,15 +180,23 @@ function Player:handleSelfUpdate()
         self.statusT,
         self.statusR,
         self.statusB,
-        self.direction
+        self.direction,
+        boolToNum(self.isJump),
+
+        boolToNum(self.shoot),
+        self.projAngle,
+        self.projStartCoords[1],
+        self.projStartCoords[2]
     )
     dg = dg .. platformToDg(self.platform)
     self.client:send(dg)
     self.t = self.t - self.updateRate
+
+    self.shoot = false
 end
 
 function Player:handleOpponentUpdate(update)
-    self.opponents[1]:setUpdateData(
+    self.opponents[update[2]]:setUpdateData(
         update[3],
         update[4],
         update[5],
@@ -124,12 +215,22 @@ function Player:handleOpponentUpdate(update)
         update[18],
         update[19],
         update[20],
-
         update[21],
+
         update[22],
         update[23],
-        update[24]
+        update[24],
+        update[25],
+
+        update[26],
+        update[27],
+        update[28],
+        update[29]
     )
+end
+
+function Player:handleProj()
+    self.isHurt = true
 end
 
 function platformToDg(platform)
