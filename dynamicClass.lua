@@ -56,7 +56,7 @@ function Dynamic:new(id, x, y, shape, width, height, baseSpeed, maxSpeed, angle,
 end
 
 function Dynamic:setIsMovable(isMovable)
-    self.isMovable = isMovable or false
+    self.isMovable = isMovable
 end
 
 function Dynamic:setUpdateData(
@@ -120,7 +120,7 @@ function Dynamic:update(dt, obstacles, direction, updateCallbacks)
     -- print(self.isJump)
 
     -- stuck prevention
-    if self.isMovable == true then
+    if self.isMovable then
         if self.statusB == 1 and self.statusL == 1 then
             self.x = self.x + 1
             self.y = self.y - 0.5

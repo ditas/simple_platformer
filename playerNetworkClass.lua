@@ -47,10 +47,12 @@ function Player:connect(address, port)
 
     local udp = self.socket.udp()
     udp:settimeout(5)
+
     if osString == "Linux" then
-        local ip = assert(self.socket.dns.toip(self.address))
+        -- local ip = assert(self.socket.dns.toip(self.address)) -- TODO: this is not needed for non localhost ip! WTF?
         udp:setsockname("*", 0) -- bind on any availible port and local(?) ip address.
-        udp:sendto(dg, ip, self.port)
+        -- udp:sendto(dg, ip, self.port)
+        udp:sendto(dg, self.address, self.port)
     else
         udp:setpeername(self.address, self.port)
         udp:send(dg)
@@ -90,6 +92,14 @@ function Player:networkUpdate(dt)
 end
 
 function Player:update(dt, obstacles, direction)
+    -- if self.statusB == 1
+    --     and self.platform.y ~= nil
+    -- then
+    --     if self.y + self.height + 7.5 > self.platform.y then
+    --         self.y = self.y - 0.1
+    --     end
+    -- end
+
     if self.isHurt == true then
 
         self:setAnimation(3)

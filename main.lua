@@ -11,8 +11,13 @@
 -- TODO: the pushing issue fix creates another issue, when I can't get through the line between 2 dynamics (well, I can jump over it)
 
 -- network test
+-- local address, port = "23.97.134.178", 5555
 local address, port = "127.0.0.1", 5555
 ---------------
+
+local assets = "assets/"
+local assetPathPlayers = "assets/Players/"
+local assetPathBoxes = "assets/Boxes/"
 
 local id = "player1"
 local opponentId = "player2"
@@ -35,6 +40,7 @@ local projs = {}
 
 function love.load()
 
+    love.graphics.setDefaultFilter("nearest", "nearest")
     love.window.setMode(screenWidth, screenHeight, screenFlags)
 
     require("playerNetworkClass")
@@ -43,7 +49,9 @@ function love.load()
     dynamic2 = Player:new(opponentId, 1050, 0, nil, 32, 32, nil, 10)
 
     -- TODO: spawn dynamics in loop
-    dynamic3 = Dynamic:new(3, 300, 0, nil, nil, nil, nil, 10)
+    dynamic3 = Animation:new(3, 300, 0, nil, 64, 48, nil, 10)
+    dynamic3:setScale(2)
+    print(dynamic3.isMovable)
     dynamic4 = Dynamic:new(4, 600, 0, nil, nil, nil, nil, 10)
     dynamic4:setIsMovable(true)
     dynamic5 = Dynamic:new(5, 700, 0, nil, nil, nil, nil, 10)
@@ -54,13 +62,13 @@ function love.load()
 
     -- animation test -- TODO: load graphics in loop for the number of players availible
     -- player 1
-    imgRight1 = love.graphics.newImage("Pink_Monster_Run_6_right.png")
-    imgLeft1 = love.graphics.newImage("Pink_Monster_Run_6_left.png")
-    imgDeath1 = love.graphics.newImage("Pink_Monster_Death_8.png")
+    imgRight1 = love.graphics.newImage(assetPathPlayers .. "Pink_Monster_Run_6_right.png")
+    imgLeft1 = love.graphics.newImage(assetPathPlayers .. "Pink_Monster_Run_6_left.png")
+    imgDeath1 = love.graphics.newImage(assetPathPlayers .. "Pink_Monster_Death_8.png")
     -- player 2
-    imgRight2 = love.graphics.newImage("Dude_Monster_Run_6_right.png")
-    imgLeft2 = love.graphics.newImage("Dude_Monster_Run_6_left.png")
-    imgDeath2 = love.graphics.newImage("Dude_Monster_Death_8.png")
+    imgRight2 = love.graphics.newImage(assetPathPlayers .. "Dude_Monster_Run_6_right.png")
+    imgLeft2 = love.graphics.newImage(assetPathPlayers .. "Dude_Monster_Run_6_left.png")
+    imgDeath2 = love.graphics.newImage(assetPathPlayers .. "Dude_Monster_Death_8.png")
 
     dynamic:addAnimation(imgRight1, 32, 32, animationSpeed)
     dynamic:addAnimation(imgLeft1, 32, 32, animationSpeed)
@@ -71,6 +79,10 @@ function love.load()
     dynamic2:addAnimation(imgLeft2, 32, 32, animationSpeed)
     dynamic2:addAnimation(imgDeath2, 32, 32, animationSpeed)
     dynamic2:setAnimation(1)
+
+    imgBoxStatic = love.graphics.newImage(assetPathBoxes .. "1_static_cropped.png")
+    dynamic3:addStatic(imgBoxStatic, 32, 24)
+    dynamic3:setAnimation(1)
     -----------------
 
     obstacles = {
@@ -97,7 +109,7 @@ function love.load()
     ---------------
 
     sprites = {}
-    sprites.crosshairs = love.graphics.newImage('crosshairs.png')
+    sprites.crosshairs = love.graphics.newImage(assets .. "crosshairs.png")
     love.mouse.setVisible(false)
 
     gameState = 1
@@ -131,7 +143,7 @@ function love.update(dt)
             end
 
             for i,o in ipairs(obstacles) do
-                print(o.type)
+                -- print(o.type)
                 if o.type == "player" and o.id ~= id then
                     o:update(dt, obstacles)
                     shootNetworkProj(o)
@@ -201,6 +213,7 @@ function love.draw()
                 o:draw()
             end
         end
+        dynamic3:draw(true)
 
         love.graphics.draw(sprites.crosshairs, love.mouse.getX()-20, love.mouse.getY()-20)
 

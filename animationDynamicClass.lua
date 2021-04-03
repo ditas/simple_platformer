@@ -9,8 +9,16 @@ function Animation:new(id, x, y, shape, width, height, baseSpeed, maxSpeed, angl
 
     o.animation = nil
     o.animations = {}
+    o.isStatic = false
+
+    o.rotation = 0
+    o.scale = 1
 
     return o
+end
+
+function Animation:setScale(scale)
+    self.scale = scale
 end
 
 function Animation:addAnimation(image, width, height, duration)
@@ -26,6 +34,13 @@ function Animation:addAnimation(image, width, height, duration)
         end
     end
 
+    table.insert(self.animations, animation)
+end
+
+function Animation:addStatic(image, width, height)
+    self.isStatic = true
+    local animation = {}
+    animation.spiteSheet = image
     table.insert(self.animations, animation)
 end
 
@@ -65,7 +80,7 @@ function Animation:update(dt, obstacles, direction)
 end
 
 function Animation:draw(isAnimate)
-    if self.animation then
+    if self.animation and not self.isStatic then
         if isAnimate and not self.isJump then
             spriteNum = math.floor(self.animation.currentTime/self.animation.duration * #self.animation.quads) + 1
             love.graphics.draw(self.animation.spiteSheet, self.animation.quads[spriteNum], self.x, self.y)
@@ -74,6 +89,8 @@ function Animation:draw(isAnimate)
         elseif isAnimate == false then -- should be explicit "false" otherwise there are some frames when it's nil
             love.graphics.draw(self.animation.spiteSheet, self.animation.quads[1], self.x, self.y)
         end
+    elseif self.animation then
+        love.graphics.draw(self.animation.spiteSheet, self.x, self.y, self.rotation, self.scale)
     else
         love.graphics.rectangle("line", self.x, self.y, self.width, self.height)
     end
