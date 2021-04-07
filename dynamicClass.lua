@@ -1,6 +1,9 @@
 local g = 10
 local tick = 1/60
 local runSpeed = 120 -- this is max, don't use more as it could fail on collisions when pushing 2+ objects
+local deathZone = {-1000, -2000, 1000, 2000}
+local collisionDelta = 7.5 -- do not change, as it could break collision detection
+local stuckPreventionDelta = 7 -- do not change, as it could cause some visual drift on the edges of the platforms
 
 require("common")
 
@@ -52,11 +55,17 @@ function Dynamic:new(id, x, y, shape, width, height, baseSpeed, maxSpeed, angle,
     o.isDead = false
     -----------------------
 
+    o.deathZone = deathZone
+
     return o
 end
 
 function Dynamic:setIsMovable(isMovable)
     self.isMovable = isMovable
+end
+
+function Dynamic:setDeathZone(deathZoneTable)
+    self.deathZone = deathZoneTable
 end
 
 function Dynamic:setUpdateData(
@@ -134,7 +143,7 @@ function Dynamic:update(dt, obstacles, direction, updateCallbacks)
         if self.statusB == 1
             and self.platform.y ~= nil
         then
-            if self.y + self.height + 7.5 > self.platform.y then
+            if self.y + self.height + stuckPreventionDelta > self.platform.y then -- it's 7, NOT 7.5, as 7.5 causes some visual drift (WHY?)
                 self.y = self.y - 0.1
             end
         end
@@ -142,9 +151,9 @@ function Dynamic:update(dt, obstacles, direction, updateCallbacks)
     -------------------
 
     if self.statusB == 1 then
-        if (self.x + 7.5 < self.platform.x + self.platform.width and self.x + self.width - 7.5 > self.platform.x)
+        if (self.x + collisionDelta < self.platform.x + self.platform.width and self.x + self.width - collisionDelta > self.platform.x)
             or
-            (self.platform.x + 7.5 < self.x + self.width and self.platform.x + self.platform.width - 7.5 > self.x)
+            (self.platform.x + collisionDelta < self.x + self.width and self.platform.x + self.platform.width - collisionDelta > self.x)
         then
             if self.direction == "left" and self.statusL ~= 1 then
                 self.x = self.x - runSpeed * dt
@@ -203,7 +212,19 @@ function Dynamic:update(dt, obstacles, direction, updateCallbacks)
         self:throwAngleDelta(dt, updateCallbacks)
     end
 
+    Dynamic.deathZoneCheck(self)
+
     Dynamic.detectCollision(self, obstacles)
+end
+
+function Dynamic:deathZoneCheck()
+    if self.x < self.deathZone[1]
+    or self.x > self.deathZone[3]
+    or self.y < self.deathZone[2]
+    or self.y > self.deathZone[4]
+    then
+        self.isDead = true
+    end
 end
 
 function Dynamic:freeFallDelta(t)
@@ -303,23 +324,23 @@ function Dynamic:detectCollision(obstacles)
         if o.id ~= self.id then
 
             -- AABB
-            if (self.x - 7.5 < o.x + o.width and
-                self.x + self.width + 7.5 > o.x and
-                self.y - 7.5 < o.y + o.height and
-                self.y + self.height + 7.5 > o.y)
+            if (self.x - collisionDelta < o.x + o.width and
+                self.x + self.width + collisionDelta > o.x and
+                self.y - collisionDelta < o.y + o.height and
+                self.y + self.height + collisionDelta > o.y)
             then
             -------
 
-                if o.y + o.height <= self.y + 7.5 then
+                if o.y + o.height <= self.y + collisionDelta then
                     self.statusT = 1
                     self.action = "topBlocked"
-                elseif o.x + o.width <= self.x + 7.5 then
+                elseif o.x + o.width <= self.x + collisionDelta then
                     self.statusL = 1
                     self.action = "leftBlocked"
-                elseif o.x >= self.x + self.width - 7.5 then
+                elseif o.x >= self.x + self.width - collisionDelta then
                     self.statusR = 1
                     self.action = "rightBlocked"
-                elseif self.y + self.height - 7.5 < o.y then
+                elseif self.y + self.height - collisionDelta < o.y then
                     self.statusB = 1
                     self.action = "stop"
 

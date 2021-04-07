@@ -1,11 +1,16 @@
 -- TODO:
--- handle id over network
+--      handle id over network
 -- handle ALL dynamics updates over network (to avoid the case when it's has slightly different positions probably because of some minor coordinate difference)
--- handle isJump over network (do I need this?)
+--      handle isJump over network (do I need this?)
 --      handle projectiles over network
 --      remove projectiles from over the screen size
 --      screen to follow up player
 --      detect projectiles collisions
+-- animation for boxes
+-- use sprites table for all images
+-- class animationStatic
+-- handle obstacles, sceneObjects, etc in minimum number of loops
+-- handle projectiles via player class
 -- handle window movement (???)
 -- add gun to player -> point gun to the mouse (???)
 -- TODO: the pushing issue fix creates another issue, when I can't get through the line between 2 dynamics (well, I can jump over it)
@@ -18,9 +23,7 @@ local address, port = "127.0.0.1", 5555
 local assets = "assets/"
 local assetPathPlayers = "assets/Players/"
 local assetPathBoxes = "assets/Boxes/"
-
-local id = "player1"
-local opponentId = "player2"
+local assetPathTiles = "assets/Tiles/"
 
 local fixedDT = 0.01666667
 local jump = false
@@ -38,6 +41,57 @@ local screenFlags = {fullscreen = false} -- set fullscreen to avoid issues with 
 local projs = {}
 ------------
 
+local sceneObjects = {}
+
+-- config for Players
+local id = "player1"
+local opponentId = "player2"
+
+local players = {}
+players[id] = {}
+players[id]["x"] = 1000
+players[id]["y"] = 0
+players[id]["width"] = 32
+players[id]["height"] = 32
+players[id]["baseSpeed"] = 10
+
+players[opponentId] = {}
+players[opponentId]["x"] = 1000
+players[opponentId]["y"] = 0
+players[opponentId]["width"] = 32
+players[opponentId]["height"] = 32
+players[opponentId]["maxSpeed"] = 10
+---------------------
+
+-- config for dynamics
+local dynamics = {}
+dynamics[3] = {}
+dynamics[3]["x"] = 300
+dynamics[3]["y"] = 0
+dynamics[3]["width"] = 64
+dynamics[3]["height"] = 48
+dynamics[3]["maxSpeed"] = 10
+dynamics[3]["scale"] = 2
+
+dynamics[4] = {}
+dynamics[4]["x"] = 600
+dynamics[4]["y"] = 0
+dynamics[4]["width"] = 64
+dynamics[4]["height"] = 48
+dynamics[4]["maxSpeed"] = 10
+dynamics[4]["isMovable"] = true
+dynamics[4]["scale"] = 2
+
+dynamics[5] = {}
+dynamics[5]["x"] = 700
+dynamics[5]["y"] = 0
+dynamics[5]["width"] = 64
+dynamics[5]["height"] = 48
+dynamics[5]["maxSpeed"] = 10
+dynamics[5]["isMovable"] = true
+dynamics[5]["scale"] = 2
+----------------------
+
 function love.load()
 
     love.graphics.setDefaultFilter("nearest", "nearest")
@@ -46,16 +100,22 @@ function love.load()
     require("playerNetworkClass")
     -- TODO: spawn players in loop (I need number of players for match + players ids, probably I should get them from server)
     dynamic = Player:new(id, 1000, 0, nil, 32, 32, nil, 10)
+    dynamic:setDeathZone({-1000, -2000, 2000, 2000})
     dynamic2 = Player:new(opponentId, 1050, 0, nil, 32, 32, nil, 10)
+    dynamic2:setDeathZone({-1000, -2000, 2000, 2000})
 
     -- TODO: spawn dynamics in loop
     dynamic3 = Animation:new(3, 300, 0, nil, 64, 48, nil, 10)
     dynamic3:setScale(2)
-    print(dynamic3.isMovable)
-    dynamic4 = Dynamic:new(4, 600, 0, nil, nil, nil, nil, 10)
+    dynamic3:setDeathZone({-1000, -2000, 2000, 2000})
+    dynamic4 = Animation:new(4, 600, 0, nil, 64, 48, nil, 10)
     dynamic4:setIsMovable(true)
-    dynamic5 = Dynamic:new(5, 700, 0, nil, nil, nil, nil, 10)
+    dynamic4:setScale(2)
+    dynamic4:setDeathZone({-1000, -2000, 2000, 2000})
+    dynamic5 = Animation:new(5, 700, 0, nil, 64, 48, nil, 10)
     dynamic5:setIsMovable(true)
+    dynamic5:setScale(2)
+    dynamic5:setDeathZone({-1000, -2000, 2000, 2000})
 
     require("staticClass")
     obstacles = {}
@@ -83,6 +143,12 @@ function love.load()
     imgBoxStatic = love.graphics.newImage(assetPathBoxes .. "1_static_cropped.png")
     dynamic3:addStatic(imgBoxStatic, 32, 24)
     dynamic3:setAnimation(1)
+
+    imgBoxDynamic = love.graphics.newImage(assetPathBoxes .. "2_dynamic_cropped.png")
+    dynamic4:addStatic(imgBoxDynamic, 32, 24)
+    dynamic4:setAnimation(1)
+    dynamic5:addStatic(imgBoxDynamic, 32, 24)
+    dynamic5:setAnimation(1)
     -----------------
 
     obstacles = {
@@ -93,15 +159,48 @@ function love.load()
         dynamic5
     }
 
+    sceneObjects = {
+        dynamic,
+        dynamic2,
+        dynamic3,
+        dynamic4,
+        dynamic5
+    }
+
+    -- use tiles
+    tilemap = {
+        {1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+        {0,0,1,2,2,2,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+        {0,0,0,0,0,0,1,2,2,2,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+        {0,0,0,0,0,0,1,2,2,2,2,2,2,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+        {0,0,0,0,0,0,0,0,0,0,0,0,1,2,2,2,2,2,2,2,2,2,2,3,0,0,0,0,0,0,0,0}
+    }
+
+    image_platform_left = love.graphics.newImage(assetPathTiles .. "Tileset/TileSet_01.png")
+    image_platform_middle = love.graphics.newImage(assetPathTiles .. "Tileset/TileSet_02.png")
+    image_platform_right = love.graphics.newImage(assetPathTiles .."Tileset/TileSet_03.png")
+    ------------
+
     -- create platforms -- TODO: spawn in loop
-    spawnObstacle(150, 150, 300, 50)
-        spawnObstacle(350, 200, 300, 50)
+    spawnTiles(tilemap)
+    spawnObject(50, 50, 150, 50, true)
 
-        spawnObstacle(350, 350, 450, 50)
+    spawnObject(150, 150, 300, 50, true)
+        spawnObject(350, 200, 300, 50, true)
 
-                spawnObstacle(650, 650, 600, 50)
+        spawnObject(350, 350, 450, 50, true)
 
-    spawnObstacle(0, 1000, 5000, 50)
+                spawnObject(650, 650, 600, 50, true)
+
+    -- spawnObject(0, 1000, 5000, 50, true)
     -------------------
 
     -- network test
@@ -174,7 +273,6 @@ function love.update(dt)
         p.x = p.x + math.cos(p.direction) * p.speed * dt
         p.y = p.y + math.sin(p.direction) * p.speed * dt
     end
-
     for i=#projs, 1, -1 do
         local p = projs[i]
         if p.x > love.graphics.getWidth() + screenWidth/2 or p.x < 0 - screenWidth/2 or p.y > love.graphics.getHeight() + screenHeight/2 or p.y < 0 - screenHeight/2 or p.isDead == true then
@@ -189,11 +287,17 @@ function love.update(dt)
             end
         end
     end
-
     for i=#obstacles, 1, -1 do
         local o = obstacles[i]
         if o.isDead == true then
             table.remove(obstacles, i)
+        end
+    end
+
+    for i=#sceneObjects, 1, -1 do
+        local o = sceneObjects[i]
+        if o.isDead == true then
+            table.remove(sceneObjects, i)
         end
     end
     ------------
@@ -206,14 +310,13 @@ function love.draw()
     love.graphics.translate(-dynamic.x+(screenWidth/2), -dynamic.y+(screenHeight/2))
         -- draw map here
 
-        for i,o in ipairs(obstacles) do
+        for i,o in ipairs(sceneObjects) do
             if o.type == "player" then
                 o:draw(true)
             else
                 o:draw()
             end
         end
-        dynamic3:draw(true)
 
         love.graphics.draw(sprites.crosshairs, love.mouse.getX()-20, love.mouse.getY()-20)
 
@@ -236,9 +339,26 @@ function love.keypressed(key)
     end
 end
 
-function spawnObstacle(x, y, width, height)
-    obstacle = Static.new(x, y, nil, width, height)
-    table.insert(obstacles, obstacle)
+function spawnObject(x, y, width, height, isCollisionEnabled, image)
+    static = Static.new(x, y, nil, width, height, image)
+    if isCollisionEnabled then
+        table.insert(obstacles, static)
+    end
+    table.insert(sceneObjects, static)
+end
+
+function spawnTiles(tilemap)
+    for i=1, #tilemap do
+        for k=1, #tilemap[i] do
+            if tilemap[i][k] == 1 then
+                spawnObject(k*50, i*50, 50, 50, false, image_platform_left)
+            elseif tilemap[i][k] == 2 then
+                spawnObject(k*50, i*50, 50, 50, false, image_platform_middle)
+            elseif tilemap[i][k] == 3 then
+                spawnObject(k*50, i*50, 50, 50, false, image_platform_right)
+            end
+        end
+    end
 end
 
 -- proj test
