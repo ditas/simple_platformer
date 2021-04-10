@@ -1,7 +1,7 @@
 Static = {}
 Static.__index = Static
 
-function Static.new(x, y, shape, width, height, image)
+function Static.new(x, y, shape, width, height, image, rotation, scaleX, scaleY, A, B)
     local o = {}
 
     o.id = "tmp_static"
@@ -15,6 +15,11 @@ function Static.new(x, y, shape, width, height, image)
     o.square = o.width * o.height
 
     o.image = image
+    o.rotation = rotation or 0
+    o.scale = scaleX or 1
+
+    o.A = A
+    o.B = B
 
     setmetatable(o, Static)
     return o
@@ -27,8 +32,11 @@ end
 
 function Static:draw()
     if self.image then
-        love.graphics.draw(self.image, self.x, self.y, 0, 1.5625)
+        -- love.graphics.draw(self.image, self.x, self.y, 0, 1.5625)
+        love.graphics.draw(self.image, self.x, self.y, self.rotation, self.scale, nil, self.A, self.B)
     else
         -- love.graphics.rectangle("line", self.x, self.y, self.width, self.height)
     end
+    -- debug
+    -- love.graphics.rectangle("line", self.x, self.y, self.width, self.height)
 end

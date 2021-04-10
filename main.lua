@@ -41,6 +41,7 @@ local screenFlags = {fullscreen = false} -- set fullscreen to avoid issues with 
 local projs = {}
 ------------
 
+local obstacles = {}
 local sceneObjects = {}
 
 -- config for Players
@@ -98,6 +99,44 @@ function love.load()
     love.window.setMode(screenWidth, screenHeight, screenFlags)
 
     require("playerNetworkClass")
+    require("staticClass")
+
+    tilemap = {
+        {4,5,5,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+        {0,0,1,2,2,2,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+        {0,0,0,0,0,0,1,2,2,2,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+        {0,0,0,0,0,0,1,2,2,2,2,2,2,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,0,0,0,0,0,0,0,0},
+        {0,0,0,0,0,0,0,0,0,0,0,0,1,2,2,2,2,2,2,2,2,2,2,3,0,0,0,0,0,0,0,0}
+    }
+    image_platform_left = love.graphics.newImage(assetPathTiles .. "Tileset/platform_brick.png")
+    image_platform = love.graphics.newImage(assetPathTiles .. "Tileset/platform_complex.png")
+    image_platform_right = love.graphics.newImage(assetPathTiles .."Tileset/platform_brick.png")
+
+    image_platform2_left = love.graphics.newImage(assetPathTiles .. "Tileset/platform2_corner.png")
+    image_platform2 = love.graphics.newImage(assetPathTiles .. "Tileset/platform2.png")
+    image_platform2_right = love.graphics.newImage(assetPathTiles .."Tileset/platform2_corner.png")
+
+    image_bg_tube1 = love.graphics.newImage(assetPathTiles .."Tileset/bg_tube1.png")
+    -- image_bg_tube1 = love.graphics.newImage(assetPathTiles .."Tileset/CavePlatforms.png")
+    spawnTiles(tilemap)
+    spawnObject(50, 50, 200, 50, true)
+
+    spawnObject(150, 150, 300, 50, true)
+        spawnObject(350, 200, 300, 50, true)
+
+        spawnObject(350, 350, 450, 50, true)
+
+                spawnObject(650, 650, 600, 50, true)
+
+    -- require("playerNetworkClass")
     -- TODO: spawn players in loop (I need number of players for match + players ids, probably I should get them from server)
     dynamic = Player:new(id, 1000, 0, nil, 32, 32, nil, 10)
     dynamic:setDeathZone({-1000, -2000, 2000, 2000})
@@ -105,20 +144,20 @@ function love.load()
     dynamic2:setDeathZone({-1000, -2000, 2000, 2000})
 
     -- TODO: spawn dynamics in loop
-    dynamic3 = Animation:new(3, 300, 0, nil, 64, 48, nil, 10)
-    dynamic3:setScale(2)
+    dynamic3 = Animation:new(3, 300, 0, nil, 50, 50, nil, 10)
+    dynamic3:setScale(2.174)
     dynamic3:setDeathZone({-1000, -2000, 2000, 2000})
-    dynamic4 = Animation:new(4, 600, 0, nil, 64, 48, nil, 10)
+    dynamic4 = Animation:new(4, 600, 0, nil, 50, 50, nil, 10)
     dynamic4:setIsMovable(true)
-    dynamic4:setScale(2)
+    dynamic4:setScale(3.333)
     dynamic4:setDeathZone({-1000, -2000, 2000, 2000})
-    dynamic5 = Animation:new(5, 700, 0, nil, 64, 48, nil, 10)
+    dynamic5 = Animation:new(5, 700, 0, nil, 50, 50, nil, 10)
     dynamic5:setIsMovable(true)
-    dynamic5:setScale(2)
+    dynamic5:setScale(3.333)
     dynamic5:setDeathZone({-1000, -2000, 2000, 2000})
 
-    require("staticClass")
-    obstacles = {}
+    -- require("staticClass")
+    -- obstacles = {}
 
     -- animation test -- TODO: load graphics in loop for the number of players availible
     -- player 1
@@ -140,18 +179,18 @@ function love.load()
     dynamic2:addAnimation(imgDeath2, 32, 32, animationSpeed)
     dynamic2:setAnimation(1)
 
-    imgBoxStatic = love.graphics.newImage(assetPathBoxes .. "1_static_cropped.png")
+    imgBoxStatic = love.graphics.newImage(assetPathBoxes .. "box_static.png")
     dynamic3:addStatic(imgBoxStatic, 32, 24)
     dynamic3:setAnimation(1)
 
-    imgBoxDynamic = love.graphics.newImage(assetPathBoxes .. "2_dynamic_cropped.png")
+    imgBoxDynamic = love.graphics.newImage(assetPathBoxes .. "box_dynamic.png")
     dynamic4:addStatic(imgBoxDynamic, 32, 24)
     dynamic4:setAnimation(1)
     dynamic5:addStatic(imgBoxDynamic, 32, 24)
     dynamic5:setAnimation(1)
     -----------------
 
-    obstacles = {
+    obstacles_dynamics = {
         dynamic,
         dynamic2,
         dynamic3,
@@ -159,46 +198,59 @@ function love.load()
         dynamic5
     }
 
-    sceneObjects = {
+    sceneObjects_dynamics = {
         dynamic,
         dynamic2,
         dynamic3,
         dynamic4,
         dynamic5
     }
+
+    for i,v in ipairs(obstacles_dynamics) do
+        table.insert(obstacles, v)
+    end
+    for i,v in ipairs(sceneObjects_dynamics) do
+        table.insert(sceneObjects, v)
+    end
 
     -- use tiles
-    tilemap = {
-        {1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-        {0,0,1,2,2,2,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-        {0,0,0,0,0,0,1,2,2,2,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-        {0,0,0,0,0,0,1,2,2,2,2,2,2,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-        {0,0,0,0,0,0,0,0,0,0,0,0,1,2,2,2,2,2,2,2,2,2,2,3,0,0,0,0,0,0,0,0}
-    }
+    -- tilemap = {
+    --     {4,5,5,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    --     {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    --     {0,0,1,2,2,2,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    --     {0,0,0,0,0,0,1,2,2,2,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    --     {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    --     {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    --     {0,0,0,0,0,0,1,2,2,2,2,2,2,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    --     {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    --     {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    --     {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    --     {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    --     {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,0,0,0,0,0,0,0,0},
+    --     {0,0,0,0,0,0,0,0,0,0,0,0,1,2,2,2,2,2,2,2,2,2,2,3,0,0,0,0,0,0,0,0}
+    -- }
 
-    image_platform_left = love.graphics.newImage(assetPathTiles .. "Tileset/TileSet_01.png")
-    image_platform_middle = love.graphics.newImage(assetPathTiles .. "Tileset/TileSet_02.png")
-    image_platform_right = love.graphics.newImage(assetPathTiles .."Tileset/TileSet_03.png")
+    -- image_platform_left = love.graphics.newImage(assetPathTiles .. "Tileset/platform_brick.png")
+    -- image_platform = love.graphics.newImage(assetPathTiles .. "Tileset/platform_complex.png")
+    -- image_platform_right = love.graphics.newImage(assetPathTiles .."Tileset/platform_brick.png")
+    --
+    -- image_platform2_left = love.graphics.newImage(assetPathTiles .. "Tileset/platform2_corner.png")
+    -- image_platform2 = love.graphics.newImage(assetPathTiles .. "Tileset/platform2.png")
+    -- image_platform2_right = love.graphics.newImage(assetPathTiles .."Tileset/platform2_corner.png")
+    --
+    -- image_bg_tube1 = love.graphics.newImage(assetPathTiles .."Tileset/bg_tube1.png")
     ------------
 
     -- create platforms -- TODO: spawn in loop
-    spawnTiles(tilemap)
-    spawnObject(50, 50, 150, 50, true)
-
-    spawnObject(150, 150, 300, 50, true)
-        spawnObject(350, 200, 300, 50, true)
-
-        spawnObject(350, 350, 450, 50, true)
-
-                spawnObject(650, 650, 600, 50, true)
+    -- spawnTiles(tilemap)
+    -- spawnObject(50, 50, 200, 50, true)
+    --
+    -- spawnObject(150, 150, 300, 50, true)
+    --     spawnObject(350, 200, 300, 50, true)
+    --
+    --     spawnObject(350, 350, 450, 50, true)
+    --
+    --             spawnObject(650, 650, 600, 50, true)
 
     -- spawnObject(0, 1000, 5000, 50, true)
     -------------------
@@ -339,8 +391,8 @@ function love.keypressed(key)
     end
 end
 
-function spawnObject(x, y, width, height, isCollisionEnabled, image)
-    static = Static.new(x, y, nil, width, height, image)
+function spawnObject(x, y, width, height, isCollisionEnabled, image, rotation, scaleX, scaleY, A, B)
+    static = Static.new(x, y, nil, width, height, image, rotation, scaleX, scaleY, A, B)
     if isCollisionEnabled then
         table.insert(obstacles, static)
     end
@@ -351,11 +403,22 @@ function spawnTiles(tilemap)
     for i=1, #tilemap do
         for k=1, #tilemap[i] do
             if tilemap[i][k] == 1 then
-                spawnObject(k*50, i*50, 50, 50, false, image_platform_left)
+                spawnObject(k*50, i*50, 50, 50, false, image_platform_left, 0, 1)
             elseif tilemap[i][k] == 2 then
-                spawnObject(k*50, i*50, 50, 50, false, image_platform_middle)
+                spawnObject(k*50, i*50, 50, 50, false, image_platform, 0, 3.125)
             elseif tilemap[i][k] == 3 then
-                spawnObject(k*50, i*50, 50, 50, false, image_platform_right)
+                spawnObject(k*50, i*50, 50, 50, false, image_platform_right, 0, 1)
+
+            elseif tilemap[i][k] == 4 then
+                spawnObject(k*50, i*50, 50, 50, false, image_platform2_left, 0, 3.333)
+            elseif tilemap[i][k] == 5 then
+                spawnObject(k*50, i*50, 50, 50, false, image_platform2, 0, 3.333)
+            elseif tilemap[i][k] == 6 then
+                spawnObject(k*50, i*50, 50, 50, false, image_platform2_right, 0, 3.333)
+
+            elseif tilemap[i][k] == 7 then
+                spawnObject(k*50, i*50, 189, 222, false, image_bg_tube1, 0, 3, nil, 32, 57)
+                -- spawnObject(k*50, i*50, 150, 150, false, image_bg_tube1, 0, 3, nil, 25, 0)
             end
         end
     end
