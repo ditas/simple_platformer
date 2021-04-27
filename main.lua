@@ -24,6 +24,7 @@ local assets = "assets/"
 local assetPathPlayers = "assets/Players/"
 local assetPathBoxes = "assets/Boxes/"
 local assetPathTiles = "assets/Tiles/"
+local assetPathBG = "assets/BG/"
 
 local fixedDT = 0.01666667
 local jump = false
@@ -35,7 +36,7 @@ local animationSpeed = 0.4
 
 local screenWidth = 1600
 local screenHeight = 900
-local screenFlags = {fullscreen = false} -- set fullscreen to avoid issues with pointer detached from crosshairs
+local screenFlags = {fullscreen = true} -- set fullscreen to avoid issues with pointer detached from crosshairs
 
 -- proj test
 local projs = {}
@@ -98,8 +99,36 @@ function love.load()
     love.graphics.setDefaultFilter("nearest", "nearest")
     love.window.setMode(screenWidth, screenHeight, screenFlags)
 
+    --BG
+    width, height = love.graphics.getDimensions()
+    -- image_bg = love.graphics.newImage(assetPathBG .. "Background.png")
+    image_bg_1 = love.graphics.newImage(assetPathBG .. "Layers/1.png")
+    image_bg_2 = love.graphics.newImage(assetPathBG .. "Layers/2.png")
+    image_bg_3 = love.graphics.newImage(assetPathBG .. "Layers/3.png")
+    image_bg_4 = love.graphics.newImage(assetPathBG .. "Layers/4.png")
+    image_bg_5 = love.graphics.newImage(assetPathBG .. "Layers/5.png")
+    image_bg_6 = love.graphics.newImage(assetPathBG .. "Layers/6.png")
+    image_bg_7 = love.graphics.newImage(assetPathBG .. "Layers/7.png")
+    ----
+
     require("playerNetworkClass")
     require("staticClass")
+
+    tilemap0 = {
+    --     {4,5,5,5,5,5,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    --     {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    --     {0,0,1,2,2,2,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    --     {0,0,0,0,0,0,1,2,2,2,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    --     {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    --     {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    --     {0,0,0,0,0,0,1,2,2,2,2,2,2,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    --     {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    --     {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    --     {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    --     {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    --     {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,0,0,0,0,0,0,0,0},
+    --     {0,0,0,0,0,0,0,0,0,0,0,0,1,2,2,2,2,2,2,2,2,2,2,3,0,0,0,0,0,0,0,0}
+    }
 
     tilemap = {
         {4,5,5,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
@@ -113,7 +142,8 @@ function love.load()
         {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
         {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
         {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,0,0,0,0,0,0,0,0},
+        -- {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,0,0,0,0,0,0,0,0},
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
         {0,0,0,0,0,0,0,0,0,0,0,0,1,2,2,2,2,2,2,2,2,2,2,3,0,0,0,0,0,0,0,0}
     }
     image_platform_left = love.graphics.newImage(assetPathTiles .. "Tileset/platform_brick.png")
@@ -126,6 +156,7 @@ function love.load()
 
     image_bg_tube1 = love.graphics.newImage(assetPathTiles .."Tileset/bg_tube1.png")
     -- image_bg_tube1 = love.graphics.newImage(assetPathTiles .."Tileset/CavePlatforms.png")
+    spawnTiles(tilemap0)
     spawnTiles(tilemap)
     spawnObject(50, 50, 200, 50, true)
 
@@ -138,13 +169,15 @@ function love.load()
 
     -- require("playerNetworkClass")
     -- TODO: spawn players in loop (I need number of players for match + players ids, probably I should get them from server)
-    dynamic = Player:new(id, 1000, 0, nil, 32, 32, nil, 10)
+    dynamic = Player:new(id, 1000, 0, nil, 96, 96, nil, 10)
+    dynamic:setScale(3)
     dynamic:setDeathZone({-1000, -2000, 2000, 2000})
     dynamic2 = Player:new(opponentId, 1050, 0, nil, 32, 32, nil, 10)
     dynamic2:setDeathZone({-1000, -2000, 2000, 2000})
 
     -- TODO: spawn dynamics in loop
-    dynamic3 = Animation:new(3, 300, 0, nil, 50, 50, nil, 10)
+    dynamic3 = Animation:new(3, 350, 0, nil, 50, 50, nil, 10)
+    -- dynamic3:setIsMovable(true)
     dynamic3:setScale(2.174)
     dynamic3:setDeathZone({-1000, -2000, 2000, 2000})
     dynamic4 = Animation:new(4, 600, 0, nil, 50, 50, nil, 10)
@@ -356,11 +389,49 @@ function love.update(dt)
 end
 
 function love.draw()
+    -- BG
+    -- local w = image_bg:getWidth()
+    -- local h = image_bg:getHeight()
+    -- local scaleX = width / w
+    -- local scaleY = height / h
+    -- love.graphics.draw(image_bg, 0, 0, 0, scaleX, scaleY)
+    local w7 = image_bg_7:getWidth()
+    local h7 = image_bg_7:getHeight()
+    local scaleX7 = width / w7
+    local scaleY7 = height / h7
+    love.graphics.draw(image_bg_7, 0, 0, 0, scaleX7, scaleY7)
+
+    local w6 = image_bg_6:getWidth()
+    local h6 = image_bg_6:getHeight()
+    local scaleX6 = width / w6
+    local scaleY6 = height / h6
+    love.graphics.draw(image_bg_6, 0, 0, 0, scaleX6, scaleY6)
+
+    local w5 = image_bg_5:getWidth()
+    local h5 = image_bg_5:getHeight()
+    local scaleX5 = width / w5
+    local scaleY5 = height / h5
+    love.graphics.draw(image_bg_5, 0, 0, 0, scaleX5, scaleY5)
+
+    local w4 = image_bg_4:getWidth()
+    local h4 = image_bg_4:getHeight()
+    local scaleX4 = width / w4
+    local scaleY4 = height / h4
+    love.graphics.draw(image_bg_4, dynamic.x/100-100, dynamic.y/100+100, 0, scaleX4*1.1, scaleY4*1.1)
+    -----
 
     -- follow player test
     love.graphics.push()
     love.graphics.translate(-dynamic.x+(screenWidth/2), -dynamic.y+(screenHeight/2))
         -- draw map here
+
+        -- BG
+        -- local w4 = image_bg_4:getWidth()
+        -- local h4 = image_bg_4:getHeight()
+        -- local scaleX4 = width / w4
+        -- local scaleY4 = height / h4
+        -- love.graphics.draw(image_bg_4, screenWidth/2, screenHeight/2, 0, scaleX4, scaleY4)
+        -----
 
         for i,o in ipairs(sceneObjects) do
             if o.type == "player" then
@@ -419,6 +490,13 @@ function spawnTiles(tilemap)
             elseif tilemap[i][k] == 7 then
                 spawnObject(k*50, i*50, 189, 222, false, image_bg_tube1, 0, 3, nil, 32, 57)
                 -- spawnObject(k*50, i*50, 150, 150, false, image_bg_tube1, 0, 3, nil, 25, 0)
+
+            -- BG
+            elseif tilemap[i][k] == 8 then
+                spawnObject(k*50, i*50, 50, 50, false, image_platform2_right, 0, 3.333)
+            -----
+
+
             end
         end
     end
