@@ -80,19 +80,20 @@ function Animation:update(dt, obstacles, direction)
 end
 
 function Animation:draw(isAnimate)
+    local collisionDelta = self:getCollisionDelta()
     if self.animation and not self.isStatic then
         if isAnimate and not self.isJump then
             spriteNum = math.floor(self.animation.currentTime/self.animation.duration * #self.animation.quads) + 1
-            love.graphics.draw(self.animation.spiteSheet, self.animation.quads[spriteNum], self.x, self.y, self.rotation, self.scale)
+            love.graphics.draw(self.animation.spiteSheet, self.animation.quads[spriteNum], self.x, self.y + collisionDelta, self.rotation, self.scale)
         elseif isAnimate then
-            love.graphics.draw(self.animation.spiteSheet, self.animation.quads[1], self.x, self.y, self.rotation, self.scale)
+            love.graphics.draw(self.animation.spiteSheet, self.animation.quads[1], self.x, self.y + collisionDelta, self.rotation, self.scale)
         elseif isAnimate == false then -- should be explicit "false" otherwise there are some frames when it's nil
-            love.graphics.draw(self.animation.spiteSheet, self.animation.quads[1], self.x, self.y, self.rotation, self.scale)
+            love.graphics.draw(self.animation.spiteSheet, self.animation.quads[1], self.x, self.y + collisionDelta, self.rotation, self.scale)
         end
     elseif self.animation then
-        love.graphics.draw(self.animation.spiteSheet, self.x, self.y, self.rotation, self.scale)
+        love.graphics.draw(self.animation.spiteSheet, self.x, self.y + collisionDelta, self.rotation, self.scale)
     else
-        love.graphics.rectangle("line", self.x, self.y, self.width, self.height)
+        love.graphics.rectangle("line", self.x, self.y + collisionDelta, self.width, self.height)
     end
 
     -- debug

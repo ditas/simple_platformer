@@ -1,6 +1,6 @@
 local g = 10
 local tick = 1/60
-local runSpeed = 200 -- 120 -- this is max, don't use more as it could fail on collisions when pushing 2+ objects
+local runSpeed = 300 -- 200 -- 120 -- this is max, don't use more as it could fail on collisions when pushing 2+ objects
 local deathZone = {-1000, -2000, 1000, 2000}
 local collisionDelta = 7.5 -- do not change, as it could break collision detection
 local stuckPreventionDelta = 7 -- do not change, as it could cause some visual drift on the edges of the platforms
@@ -58,6 +58,14 @@ function Dynamic:new(id, x, y, shape, width, height, baseSpeed, maxSpeed, angle,
     o.deathZone = deathZone
 
     return o
+end
+
+function Dynamic:getCollisionDelta()
+    if self.type == "player" then
+        return collisionDelta
+    else 
+        return 0
+    end
 end
 
 function Dynamic:setIsMovable(isMovable)
